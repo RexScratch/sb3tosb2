@@ -1411,7 +1411,17 @@ for i in range(len(data['targets'])):
             costumeAssets[c['assetId']] = len(costumeAssets)
 
             f = zfsb3.open(c['md5ext'], 'r')
-            zfsb2.writestr('{}.{}'.format(len(costumeAssets) - 1, c['dataFormat']), bytes(f.read()))
+            img = f.read()
+            if c['dataFormat'] == 'svg':
+                img = str(img)[2:-1]
+                img = img.replace('fill="undefined"', '') # Fix broken SVGs
+                img = img.replace('font-family="Sans Serif"', 'font-family="Helvetica"')
+                img = img.replace('font-family="Serif"', 'font-family="Donegal"')
+                img = img.replace('font-family=""Handwriting""', 'font-family="Gloria"')
+                img = img.replace('font-family="Curly"', 'font-family="Mystery"')
+            else:
+                img = bytes(img)
+            zfsb2.writestr('{}.{}'.format(len(costumeAssets) - 1, c['dataFormat']), img)
             f.close()
 
         costume = {
