@@ -1271,7 +1271,10 @@ def inputVal(value, block, blocks):
             elif out[0] == 13:
                 return ['contentsOfList:', out[1]]
             else:
-                return
+                try:
+                    return out[1]
+                except:
+                    return
     
     outType = value[1][0]
     if outType in [4, 5, 8]:
