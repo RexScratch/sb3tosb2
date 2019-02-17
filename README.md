@@ -9,7 +9,7 @@ Requirements
 
 Installation
 --------------
-Download the sb3tosb2.py file and move it to wherever you like.
+Download and extract the ZIP file and move the sb3tosb2.py file to wherever you want.
 
 Usage
 --------------
