@@ -1001,7 +1001,7 @@ class Blocks:
         output.append(json.loads(procData['argumentdefaults']))
         if len(output[-1]) != len(output[-2]):
             output[-1] = len(output[-2]) * ['']
-        output.append(bool(procData['warp']))
+        output.append(procData['warp'] == 'true')
         return output
 
     @staticmethod
