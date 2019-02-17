@@ -22,3 +22,4 @@ Known Issues
 - Non-variable or list stage monitors won't be converted
 - Some SVG files may not appear correctly, although this is because Scratch 3 modifies them
 - MP3 audio files cannot be converted
+- Comments may not be attached to the correct block
