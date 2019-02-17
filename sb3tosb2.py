@@ -1414,6 +1414,7 @@ for i in range(len(data['targets'])):
             img = f.read()
             if c['dataFormat'] == 'svg':
                 img = str(img)[2:-1]
+                img = img.replace('\\n', '\n')
                 img = img.replace('fill="undefined"', '') # Fix broken SVGs
                 img = img.replace('font-family="Sans Serif"', 'font-family="Helvetica"')
                 img = img.replace('font-family="Serif"', 'font-family="Donegal"')
