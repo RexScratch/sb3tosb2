@@ -1333,6 +1333,26 @@ def substack(stack, block, blocks):
             block = blocks[block['next']]
     return script
 
+sb2path = sys.argv[2]
+
+error = False
+try:
+    open(sb2path, 'r').close()
+    print("ERROR: File '{}' already exists".format(sb2path))
+    error = True
+except:
+    pass
+
+if error:
+    sys.exit()
+
+sb2path = sb2path[0:-4] + '(temp).zip'
+try:
+    os.remove(sb2path)
+except:
+    pass
+zfsb2 = zipfile.ZipFile(sb2path, 'x')
+
 sb3path = sys.argv[1]
 sb3path = sb3path[0:-3] + 'zip'
 try:
@@ -1345,10 +1365,6 @@ zfsb3 = zipfile.ZipFile(sb3path, 'r')
 f = zfsb3.open('project.json', 'r')
 data = json.loads(f.read())
 f.close()
-
-sb2path = sys.argv[2]
-sb2path = sb2path[0:-4] + '(temp).zip'
-zfsb2 = zipfile.ZipFile(sb2path, 'x')
 
 output = {}
 costumeAssets = {}
