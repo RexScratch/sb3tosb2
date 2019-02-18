@@ -1434,7 +1434,7 @@ for i in range(len(data['targets'])):
         costume = {
             'costumeName': c['name'],
             'baseLayerID': costumeAssets[c['assetId']],
-            'md5': c['md5ext'],
+            'baseLayerMD5': c['md5ext'],
             'rotationCenterX': c['rotationCenterX'],
             'rotationCenterY': c['rotationCenterY']
         }
