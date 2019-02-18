@@ -1416,10 +1416,12 @@ for i in range(len(data['targets'])):
             if c['dataFormat'] == 'svg':
                 img = str(img)[2:-1]
                 img = img.replace('\\n', '\n')
+                img = img.replace("\\'", "'")
+                img = img.replace('\\\\', '\\')
                 img = img.replace('fill="undefined"', '') # Fix broken SVGs
                 img = img.replace('font-family="Sans Serif"', 'font-family="Helvetica"')
                 img = img.replace('font-family="Serif"', 'font-family="Donegal"')
-                img = img.replace('font-family=""Handwriting""', 'font-family="Gloria"')
+                img = img.replace('font-family="Handwriting"', 'font-family="Gloria"')
                 img = img.replace('font-family="Curly"', 'font-family="Mystery"')
             else:
                 img = bytes(img)
