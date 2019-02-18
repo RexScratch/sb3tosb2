@@ -1031,6 +1031,83 @@ class Blocks:
         output.append('b')
         return output
 
+    # LEGO WeDo 2.0
+
+    @staticmethod
+    def wedo2_motorOnFor(block, blocks):
+        output = ['LEGO WeDo 2.0\u001fmotorOnFor']
+        output.append(inputVal('MOTOR_ID', block, blocks))
+        output.append(inputVal('DURATION', block, blocks))
+        return output
+
+    @staticmethod
+    def wedo2_motorOn(block, blocks):
+        output = ['LEGO WeDo 2.0\u001fmotorOn']
+        output.append(inputVal('MOTOR_ID', block, blocks))
+        return output
+
+    @staticmethod
+    def wedo2_motorOff(block, blocks):
+        output = ['LEGO WeDo 2.0\u001fmotorOff']
+        output.append(inputVal('MOTOR_ID', block, blocks))
+        return output
+    
+    @staticmethod
+    def wedo2_startMotorPower(block, blocks):
+        output = ['LEGO WeDo 2.0\u001fstartMotorPower']
+        output.append(inputVal('MOTOR_ID', block, blocks))
+        output.append(inputVal('POWER', block, blocks))
+        return output
+
+    @staticmethod
+    def wedo2_setMotorDirection(block, blocks):
+        output = ['LEGO WeDo 2.0\u001fsetMotorDirection']
+        output.append(inputVal('MOTOR_ID', block, blocks))
+        output.append(inputVal('MOTOR_DIRECTION', block, blocks))
+        return output
+
+    @staticmethod
+    def wedo2_setLightHue(block, blocks):
+        output = ['LEGO WeDo 2.0\u001fsetLED']
+        output.append(inputVal('HUE', block, blocks))
+        return output
+
+    @staticmethod
+    def wedo2_playNoteFor(block, blocks):
+        output = ['LEGO WeDo 2.0\u001fplayNote']
+        output.append(inputVal('NOTE', block, blocks))
+        output.append(inputVal('DURATION', block, blocks))
+        return output
+
+    @staticmethod
+    def wedo2_whenDistance(block, blocks):
+        output = ['LEGO WeDo 2.0\u001fwhenDistance']
+        output.append(inputVal('OP', block, blocks))
+        output.append(inputVal('REFERENCE', block, blocks))
+        return output
+
+    @staticmethod
+    def wedo2_whenTilted(block, blocks):
+        output = ['LEGO WeDo 2.0\u001fwhenTilted']
+        output.append(inputVal('TILT_DIRECTION_ANY', block, blocks))
+        return output
+
+    @staticmethod
+    def wedo2_getDistance(block, blocks):
+        return ['LEGO WeDo 2.0\u001fgetDistance']
+
+    @staticmethod
+    def wedo2_isTilted(block, blocks):
+        output = ['LEGO WeDo 2.0\u001fisTilted']
+        output.append(inputVal('TILT_DIRECTION_ANY', block, blocks))
+        return output
+
+    @staticmethod
+    def wedo2_getTiltAngle(block, blocks):
+        output = ['LEGO WeDo 2.0\u001fgetTilt']
+        output.append(inputVal('TILT_DIRECTION', block, blocks))
+        return output
+
 Blocks.funcs = {
     "motion_movesteps": Blocks.motion_movesteps,
     "motion_turnright": Blocks.motion_turnright,
@@ -1202,6 +1279,19 @@ Blocks.funcs = {
     "procedures_call": Blocks.procedures_call,
     "argument_reporter_string_number": Blocks.argument_reporter_string_number,
     "argument_reporter_boolean": Blocks.argument_reporter_boolean,
+
+    "wedo2_motorOnFor": Blocks.wedo2_motorOnFor,
+    "wedo2_motorOn": Blocks.wedo2_motorOn,
+    "wedo2_motorOff": Blocks.wedo2_motorOff,
+    "wedo2_startMotorPower": Blocks.wedo2_startMotorPower,
+    "wedo2_setMotorDirection": Blocks.wedo2_setMotorDirection,
+    "wedo2_setLightHue": Blocks.wedo2_setLightHue,
+    "wedo2_playNoteFor": Blocks.wedo2_playNoteFor,
+    "wedo2_whenDistance": Blocks.wedo2_whenDistance,
+    "wedo2_whenTilted": Blocks.wedo2_whenTilted,
+    "wedo2_getDistance": Blocks.wedo2_getDistance,
+    "wedo2_isTilted": Blocks.wedo2_isTilted,
+    "wedo2_getTiltAngle": Blocks.wedo2_getTiltAngle,
 }
 
 warnings = 0
@@ -1480,7 +1570,13 @@ for i in range(len(data['targets'])):
 
     for key, c in target['comments'].items():
         comment = []
-        comment.append(c['x'])
+        if c['x'] == None:
+            x = None
+        else:
+            x = round(c['x'] / 1.8, 6)
+            if x % 1 == 0:
+                x = int(x)
+        comment.append(x)
         if c['y'] == None:
             y = None
         else:
@@ -1529,10 +1625,13 @@ for i in range(len(data['targets'])):
             setCommentBlockId(key)
             block = b
 
+            x = round(block['x'] / 1.8, 6)
+            if x % 1 == 0:
+                x = int(x)
             y = round(block['y'] / 1.8, 6)
             if y % 1 == 0:
                 y = int(y)
-            script = [block['x'], y, []]
+            script = [x, y, []]
 
             end = False
             while not end:
@@ -1672,6 +1771,9 @@ for s in sprites:
 sprites.extend(monitors)
 
 output['children'] = sprites
+
+if 'wedo2' in data['extensions']:
+    output['info']['savedExtensions'] = [{'extensionName': 'LEGO WeDo 2.0', 'blockSpecs': [['w', 'turn %m.motor on for %n secs', 'motorOnFor', 'motor', 1], [' ', 'turn %m.motor on', 'motorOn', 'motor'], [' ', 'turn %m.motor off', 'motorOff', 'motor'], [' ', 'set %m.motor power to %n', 'startMotorPower', 'motor', 100], [' ', 'set %m.motor direction to %m.motorDir', 'setMotorDirection', 'motor', 'this way'], [' ', 'set light color to %n', 'setLED', 50], ['w', 'play note %d.note for %n seconds', 'playNote', 60, 0.5], ['h', 'when distance %m.lessMore %n', 'whenDistance', '<', 50], ['h', 'when tilted %m.tiltDirAny', 'whenTilted', 'any'], ['r', 'distance', 'getDistance'], ['b', 'tilted %m.tiltDirAny ?', 'isTilted', 'any'], ['r', 'tilt angle %m.tiltDir', 'getTilt', 'up']], 'menus': {'tiltDir': ['up', 'down', 'left', 'right'], 'motorDir': ['this way', 'that way', 'reverse'], 'tiltDirAny': ['any', 'up', 'down', 'left', 'right'], 'eNe': ['=', 'not ='], 'lessMore': ['<', '>'], 'motor': ['motor', 'motor A', 'motor B', 'all motors']}, 'url': '/info/help/studio/tips/ext/LEGO WeDo 2/'}]
 
 output = json.dumps(output)
 
