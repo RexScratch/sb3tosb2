@@ -748,7 +748,10 @@ class Blocks:
     @staticmethod
     def sensing_current(block, blocks):
         output = ['timeAndDate']
-        output.append(fieldVal('CURRENTMENU', block))
+        field = fieldVal('CURRENTMENU', block)
+        if type(field) == str:
+            field = str.lower(field)
+        output.append(field)
         return output
 
     @staticmethod
