@@ -1541,7 +1541,7 @@ for i in range(len(data['targets'])):
 
         sprite['currentCostumeIndex'] = target['currentCostume']
         sprite['tempoBPM'] = target['tempo']
-        sprite['videoAlpha'] = target['videoTransparency']
+        sprite['videoAlpha'] = (100 - target['videoTransparency']) / 100
 
         output = sprite
         output['objName'] = 'Stage'
