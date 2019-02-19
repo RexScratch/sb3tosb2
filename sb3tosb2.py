@@ -1593,7 +1593,7 @@ sprites.extend(monitors)
 output['children'] = sprites
 
 if 'wedo2' in data['extensions']:
-    output['info']['savedExtensions'] = [{'extensionName': 'LEGO WeDo 2.0', 'blockSpecs': [['w', 'turn %m.motor on for %n secs', 'motorOnFor', 'motor', 1], [' ', 'turn %m.motor on', 'motorOn', 'motor'], [' ', 'turn %m.motor off', 'motorOff', 'motor'], [' ', 'set %m.motor power to %n', 'startMotorPower', 'motor', 100], [' ', 'set %m.motor direction to %m.motorDir', 'setMotorDirection', 'motor', 'this way'], [' ', 'set light color to %n', 'setLED', 50], ['w', 'play note %d.note for %n seconds', 'playNote', 60, 0.5], ['h', 'when distance %m.lessMore %n', 'whenDistance', '<', 50], ['h', 'when tilted %m.tiltDirAny', 'whenTilted', 'any'], ['r', 'distance', 'getDistance'], ['b', 'tilted %m.tiltDirAny ?', 'isTilted', 'any'], ['r', 'tilt angle %m.tiltDir', 'getTilt', 'up']], 'menus': {'tiltDir': ['up', 'down', 'left', 'right'], 'motorDir': ['this way', 'that way', 'reverse'], 'tiltDirAny': ['any', 'up', 'down', 'left', 'right'], 'eNe': ['=', 'not ='], 'lessMore': ['<', '>'], 'motor': ['motor', 'motor A', 'motor B', 'all motors']}, 'url': '/info/help/studio/tips/ext/LEGO WeDo 2/'}]
+    output['info']['savedExtensions'] = [{'extensionName': 'LEGO WeDo 2.0'}]
 
 output = json.dumps(output)
 
