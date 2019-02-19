@@ -1,4 +1,4 @@
-import sys, json, zipfile, os
+import sys, json, zipfile
 
 class Blocks:
 
@@ -996,12 +996,14 @@ class Blocks:
 
     @staticmethod
     def procedures_definition(block, blocks):
+        global blockID
         block = blocks[block['inputs']['custom_block'][1]]
         procData = block['mutation']
         output = ['procDef']
         output.append(procData['proccode'])
         output.append(json.loads(procData['argumentnames']))
         output.append(json.loads(procData['argumentdefaults']))
+        blockID += (1 + len(output[-2]))
         if len(output[-1]) != len(output[-2]):
             output[-1] = len(output[-2]) * ['']
         warp = procData['warp']
@@ -1296,7 +1298,6 @@ Blocks.funcs = {
 
 warnings = 0
 blockID = 0
-blockIDDelta = 0
 
 def printWarn(message):
     global warnings
@@ -1314,16 +1315,23 @@ def hexToDec(dec):
     except:
         return dec
 
+def hackedReporterBlockID(reporter):
+    global blockID
+    blockID += 1
+    for value in reporter:
+        if type(value) == list:
+            hackedReporterBlockID(value)
+
 def convert(block, blocks):
-    global blockIDDelta
+    global blockID
     opcode = block['opcode']
     if opcode in Blocks.funcs:
-        blockIDDelta += 1
+        blockID += 1
         return Blocks.funcs[opcode](block, blocks)
     elif len(block['inputs']) == 0 and len(block['fields']) == 1 and opcode != 'sensing_setdragmode': # Menu opcodes
         return fieldVal(list(block['fields'].items())[0][0], block)
     else:
-        blockIDDelta += 1
+        blockID += 1
         printWarn("Incompatible opcode '{}'".format(opcode))
         
         output = [opcode]
@@ -1332,13 +1340,6 @@ def convert(block, blocks):
         for f in block['fields']:
             output.append(fieldVal(f, block))
         return output
-
-def topConvert(block, blocks):
-    global blockID, blockIDDelta
-    blockIDDelta = 0
-    result = convert(block, blocks)
-    blockID += blockIDDelta
-    return result
 
 def inputVal(value, block, blocks):
 
@@ -1399,7 +1400,11 @@ def fieldVal(value, block):
     if not value in block['fields']:
         return None
 
-    return block['fields'][value][0]
+    value = block['fields'][value][0]
+    if type(value) == list:
+        hackedReporterBlockID(value)
+
+    return value
 
 def substack(stack, block, blocks):
 
@@ -1415,7 +1420,7 @@ def substack(stack, block, blocks):
     script = []
     end = False
     while not end:
-        script.append(topConvert(block, blocks))
+        script.append(convert(block, blocks))
         if block['next'] == None:
             end = True
         else:
@@ -1436,20 +1441,9 @@ except:
 if error:
     sys.exit()
 
-sb2path = sb2path[0:-4] + '(temp).zip'
-try:
-    os.remove(sb2path)
-except:
-    pass
 zfsb2 = zipfile.ZipFile(sb2path, 'x')
 
 sb3path = sys.argv[1]
-sb3path = sb3path[0:-3] + 'zip'
-try:
-    os.rename(sys.argv[1], sb3path)
-except:
-    sys.argv[1] = sb3path[0:-3] + 'sb3'
-
 zfsb3 = zipfile.ZipFile(sb3path, 'r')
 
 f = zfsb3.open('project.json', 'r')
@@ -1480,8 +1474,6 @@ totalTargets = len(data['targets'])
 scriptCount = 0
 
 for i in range(len(data['targets'])):
-
-    blockID = 0
 
     target = data['targets'][i]
     sprite = {}
@@ -1595,13 +1587,12 @@ for i in range(len(data['targets'])):
 
         comments.append(comment)
     
-    blocks = target['blocks']
+    blocks = target['blocks'] 
+    blockID = 0
 
     for key, b in blocks.items():
 
         if type(b) == list:
-
-            setCommentBlockId(key)
 
             x = round(b[3] / 1.5, 6)
             if x % 1 == 0:
@@ -1619,6 +1610,7 @@ for i in range(len(data['targets'])):
                 script = None
 
             if script != None:
+                setCommentBlockId(key)
                 blockID += 1
                 scripts.append(script)
                 scriptCount += 1
@@ -1638,7 +1630,7 @@ for i in range(len(data['targets'])):
 
             end = False
             while not end:
-                script[2].append(topConvert(block, blocks))
+                script[2].append(convert(block, blocks))
                 if block['next'] == None:
                     end = True
                 else:
@@ -1781,12 +1773,6 @@ if 'wedo2' in data['extensions']:
 output = json.dumps(output)
 
 zfsb2.writestr('project.json', output)
-
-zfsb3.close()
-os.rename(sb3path, sys.argv[1])
-
-zfsb2.close()
-os.rename(sb2path, sys.argv[2])
 
 if warnings == 0:
     print('Completed with no warnings')
