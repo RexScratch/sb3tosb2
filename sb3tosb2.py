@@ -1573,7 +1573,7 @@ for i in range(len(data['targets'])):
         if c['x'] == None:
             x = None
         else:
-            x = round(c['x'] / 1.8, 6)
+            x = round(c['x'] / 1.5, 6)
             if x % 1 == 0:
                 x = int(x)
         comment.append(x)
@@ -1603,10 +1603,13 @@ for i in range(len(data['targets'])):
 
             setCommentBlockId(key)
 
+            x = round(b[3] / 1.5, 6)
+            if x % 1 == 0:
+                x = int(x)
             y = round(b[4] / 1.8, 6)
             if y % 1 == 0:
                 y = int(y)
-            script = [b[3], y]
+            script = [x, y]
 
             if b[0] == 12:
                 script.append([['readVariable', b[1]]])
@@ -1625,7 +1628,7 @@ for i in range(len(data['targets'])):
             setCommentBlockId(key)
             block = b
 
-            x = round(block['x'] / 1.8, 6)
+            x = round(block['x'] / 1.5, 6)
             if x % 1 == 0:
                 x = int(x)
             y = round(block['y'] / 1.8, 6)
