@@ -399,7 +399,7 @@ class Blocks:
     @staticmethod
     def pen_setPenColorToColor(block, blocks):
         output = ['penColor:']
-        output.append(hexToDec(inputVal('COLOR', block, blocks)))
+        output.append(inputVal('COLOR', block, blocks))
         return output
 
     @staticmethod
@@ -678,14 +678,14 @@ class Blocks:
     @staticmethod
     def sensing_touchingcolor(block, blocks):
         output = ['touchingColor:']
-        output.append(hexToDec(inputVal('COLOR', block, blocks)))
+        output.append(inputVal('COLOR', block, blocks))
         return output
 
     @staticmethod
     def sensing_coloristouchingcolor(block, blocks):
         output = ['color:sees:']
-        output.append(hexToDec(inputVal('COLOR', block, blocks)))
-        output.append(hexToDec(inputVal('COLOR2', block, blocks)))
+        output.append(inputVal('COLOR', block, blocks))
+        output.append(inputVal('COLOR2', block, blocks))
         return output
 
     @staticmethod
@@ -1129,11 +1129,11 @@ def setCommentBlockId(id):
     if id in blockComments:
         comments[blockComments[id]][5] = blockID
 
-def hexToDec(dec):
+def hexToDec(hexNum):
     try:
-        return int(dec[1:], 16)
+        return int(hexNum[1:], 16)
     except:
-        return dec
+        return hexNum
 
 def hackedReporterBlockID(reporter):
     global blockID
@@ -1148,7 +1148,7 @@ def convert(block, blocks):
     if opcode in Blocks.funcs:
         blockID += 1
         return Blocks.funcs[opcode](block, blocks)
-    elif len(block['inputs']) == 0 and len(block['fields']) == 1 and opcode != 'sensing_setdragmode': # Menu opcodes
+    elif len(block['inputs']) == 0 and len(block['fields']) == 1 and block['shadow']: # Menu opcodes and shadows
         return fieldVal(list(block['fields'].items())[0][0], block)
     else:
         blockID += 1
@@ -1210,11 +1210,15 @@ def inputVal(value, block, blocks):
                 output = int(output)
         except ValueError:
             pass
+    elif outType == 9:
+        output = hexToDec(output)
 
     if output == '-Infinity':
         output = float('-inf')
-    if output == 'Infinity':
+    elif output == 'Infinity':
         output = float('inf')
+    elif output == 'NaN':
+        output = float('nan')
 
     return output
 
@@ -1339,7 +1343,7 @@ for target in data['targets']:
             if c['dataFormat'] == 'svg':
                 img = str(img)[2:-1]
                 img = img.replace('\\n', '\n')
-                img = img.replace("\\'", "'")
+                img = img.replace("\\'", "&apos;")
                 img = img.replace('\\\\', '\\')
                 img = img.replace('fill="undefined"', '') # Fix broken SVGs
                 img = img.replace('font-family="Sans Serif"', 'font-family="Helvetica"')
@@ -1556,7 +1560,6 @@ for m in data['monitors']:
         }
 
     else:
-
         printWarn("Stage monitor '{}' will not be converted".format(m['opcode']))
 
 for l in output['lists']:
