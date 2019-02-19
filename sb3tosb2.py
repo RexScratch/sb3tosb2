@@ -1110,191 +1110,11 @@ class Blocks:
         output.append(inputVal('TILT_DIRECTION', block, blocks))
         return output
 
-Blocks.funcs = {
-    "motion_movesteps": Blocks.motion_movesteps,
-    "motion_turnright": Blocks.motion_turnright,
-    "motion_turnleft": Blocks.motion_turnleft,
-    "motion_pointindirection": Blocks.motion_pointindirection,
-    "motion_pointtowards": Blocks.motion_pointtowards,
-    "motion_gotoxy": Blocks.motion_gotoxy,
-    "motion_goto": Blocks.motion_goto,
-    "motion_glidesecstoxy": Blocks.motion_glidesecstoxy,
-    "motion_changexby": Blocks.motion_changexby,
-    "motion_setx": Blocks.motion_setx,
-    "motion_changeyby": Blocks.motion_changeyby,
-    "motion_sety": Blocks.motion_sety,
-    "motion_ifonedgebounce": Blocks.motion_ifonedgebounce,
-    "motion_setrotationstyle": Blocks.motion_setrotationstyle,
-    "motion_xposition": Blocks.motion_xposition,
-    "motion_yposition": Blocks.motion_yposition,
-    "motion_direction": Blocks.motion_direction,
-    "motion_scroll_right": Blocks.motion_scroll_right,
-    "motion_scroll_up": Blocks.motion_scroll_up,
-    "motion_align_scene": Blocks.motion_align_scene,
-    "motion_xscroll": Blocks.motion_xscroll,
-    "motion_yscroll": Blocks.motion_yscroll,
+Blocks.funcs = {}
+funcTuples = [(name, obj) for name, obj in Blocks.__dict__.items() if type(obj) == staticmethod and not name.startswith('__')]
 
-    "looks_sayforsecs": Blocks.looks_sayforsecs,
-    "looks_say": Blocks.looks_say,
-    "looks_thinkforsecs": Blocks.looks_thinkforsecs,
-    "looks_think": Blocks.looks_think,
-    "looks_show": Blocks.looks_show,
-    "looks_hide": Blocks.looks_hide,
-    "looks_hideallsprites": Blocks.looks_hideallsprites,
-    "looks_switchcostumeto": Blocks.looks_switchcostumeto,
-    "looks_nextcostume": Blocks.looks_nextcostume,
-    "looks_switchbackdropto": Blocks.looks_switchbackdropto,
-    "looks_changeeffectby": Blocks.looks_changeeffectby,
-    "looks_seteffectto": Blocks.looks_seteffectto,
-    "looks_cleargraphiceffects": Blocks.looks_cleargraphiceffects,
-    "looks_changesizeby": Blocks.looks_changesizeby,
-    "looks_setsizeto": Blocks.looks_setsizeto,
-    "looks_changestretchby": Blocks.looks_changestretchby,
-    "looks_setstretchto": Blocks.looks_setstretchto,
-    "looks_gotofrontback": Blocks.looks_gotofrontback,
-    "looks_goforwardbackwardlayers": Blocks.looks_goforwardbackwardlayers,
-    "looks_costumenumbername": Blocks.looks_costumenumbername,
-    "looks_backdropnumbername": Blocks.looks_backdropnumbername,
-    "looks_size": Blocks.looks_size,
-    "looks_switchbackdroptoandwait": Blocks.looks_switchbackdroptoandwait,
-    "looks_nextbackdrop": Blocks.looks_nextbackdrop,
-
-    "sound_play": Blocks.sound_play,
-    "sound_playuntildone": Blocks.sound_playuntildone,
-    "sound_stopallsounds": Blocks.sound_stopallsounds,
-    "sound_changevolumeby": Blocks.sound_changevolumeby,
-    "sound_setvolumeto": Blocks.sound_setvolumeto,
-    "sound_volume": Blocks.sound_volume,
-
-    "music_playDrumForBeats": Blocks.music_playDrumForBeats,
-    "music_midiPlayDrumForBeats": Blocks.music_midiPlayDrumForBeats,
-    "music_restForBeats": Blocks.music_restForBeats,
-    "music_playNoteForBeats": Blocks.music_playNoteForBeats,
-    "music_setInstrument": Blocks.music_setInstrument,
-    "music_midiSetInstrument": Blocks.music_midiSetInstrument,
-    "music_changeTempo": Blocks.music_changeTempo,
-    "music_setTempo": Blocks.music_setTempo,
-    "music_getTempo": Blocks.music_getTempo,
-
-    "pen_clear": Blocks.pen_clear,
-    "pen_stamp": Blocks.pen_stamp,
-    "pen_penDown": Blocks.pen_penDown,
-    "pen_penUp": Blocks.pen_penUp,
-    "pen_setPenColorToColor": Blocks.pen_setPenColorToColor,
-    "pen_changePenHueBy": Blocks.pen_changePenHueBy,
-    "pen_setPenHueToNumber": Blocks.pen_setPenHueToNumber,
-    "pen_changePenShadeBy": Blocks.pen_changePenShadeBy,
-    "pen_setPenShadeToNumber": Blocks.pen_setPenShadeToNumber,
-    "pen_changePenSizeBy": Blocks.pen_changePenSizeBy,
-    "pen_setPenSizeTo": Blocks.pen_setPenSizeTo,
-    "pen_setPenColorParamTo": Blocks.pen_setPenColorParamTo,
-    "pen_changePenColorParamBy": Blocks.pen_changePenColorParamBy,
-
-    "event_whenflagclicked": Blocks.event_whenflagclicked,
-    "event_whenkeypressed": Blocks.event_whenkeypressed,
-    "event_whenthisspriteclicked": Blocks.event_whenthisspriteclicked,
-    "event_whenbackdropswitchesto": Blocks.event_whenbackdropswitchesto,
-    "event_whengreaterthan": Blocks.event_whengreaterthan,
-    "event_whenbroadcastreceived": Blocks.event_whenbroadcastreceived,
-    "event_broadcast": Blocks.event_broadcast,
-    "event_broadcastandwait": Blocks.event_broadcastandwait,
-
-    "control_wait": Blocks.control_wait,
-    "control_repeat": Blocks.control_repeat,
-    "control_forever": Blocks.control_forever,
-    "control_if": Blocks.control_if,
-    "control_if_else": Blocks.control_if_else,
-    "control_wait_until": Blocks.control_wait_until,
-    "control_repeat_until": Blocks.control_repeat_until,
-    "control_while": Blocks.control_while,
-    "control_for_each": Blocks.control_for_each,
-    "control_stop": Blocks.control_stop,
-    "control_start_as_clone": Blocks.control_start_as_clone,
-    "control_create_clone_of": Blocks.control_create_clone_of,
-    "control_delete_this_clone": Blocks.control_delete_this_clone,
-    "control_get_counter": Blocks.control_get_counter,
-    "control_incr_counter": Blocks.control_incr_counter,
-    "control_clear_counter": Blocks.control_clear_counter,
-    "control_all_at_once": Blocks.control_all_at_once,
-
-    "videoSensing_videoOn": Blocks.videoSensing_videoOn,
-    "videoSensing_whenMotionGreaterThan": Blocks.videoSensing_whenMotionGreaterThan,
-    "videoSensing_videoToggle": Blocks.videoSensing_videoToggle,
-    "videoSensing_setVideoTransparency": Blocks.videoSensing_setVideoTransparency,
-
-    "sensing_touchingobject": Blocks.sensing_touchingobject,
-    "sensing_touchingcolor": Blocks.sensing_touchingcolor,
-    "sensing_coloristouchingcolor": Blocks.sensing_coloristouchingcolor,
-    "sensing_distanceto": Blocks.sensing_distanceto,
-    "sensing_askandwait": Blocks.sensing_askandwait,
-    "sensing_answer": Blocks.sensing_answer,
-    "sensing_keypressed": Blocks.sensing_keypressed,
-    "sensing_mousedown": Blocks.sensing_mousedown,
-    "sensing_mousex": Blocks.sensing_mousex,
-    "sensing_mousey": Blocks.sensing_mousey,
-    "sensing_loudness": Blocks.sensing_loudness,
-    "sensing_loud": Blocks.sensing_loud,
-    "sensing_timer": Blocks.sensing_timer,
-    "sensing_resettimer": Blocks.sensing_resettimer,
-    "sensing_of": Blocks.sensing_of,
-    "sensing_current": Blocks.sensing_current,
-    "sensing_dayssince2000": Blocks.sensing_dayssince2000,
-    "sensing_username": Blocks.sensing_username,
-    "sensing_userid": Blocks.sensing_userid,
-
-    "operator_add": Blocks.operator_add,
-    "operator_subtract": Blocks.operator_subtract,
-    "operator_multiply": Blocks.operator_multiply,
-    "operator_divide": Blocks.operator_divide,
-    "operator_random": Blocks.operator_random,
-    "operator_gt": Blocks.operator_gt,
-    "operator_lt": Blocks.operator_lt,
-    "operator_equals": Blocks.operator_equals,
-    "operator_and": Blocks.operator_and,
-    "operator_or": Blocks.operator_or,
-    "operator_not": Blocks.operator_not,
-    "operator_join": Blocks.operator_join,
-    "operator_letter_of": Blocks.operator_letter_of,
-    "operator_length": Blocks.operator_length,
-    "operator_mod": Blocks.operator_mod,
-    "operator_round": Blocks.operator_round,
-    "operator_mathop": Blocks.operator_mathop,
-
-    "data_variable": Blocks.data_variable,
-    "data_setvariableto": Blocks.data_setvariableto,
-    "data_changevariableby": Blocks.data_changevariableby,
-    "data_showvariable": Blocks.data_showvariable,
-    "data_hidevariable": Blocks.data_hidevariable,
-    "data_listconents": Blocks.data_listcontents,
-    "data_addtolist": Blocks.data_addtolist,
-    "data_deleteoflist": Blocks.data_deleteoflist,
-    "data_deletealloflist": Blocks.data_deletealloflist,
-    "data_insertatlist": Blocks.data_insertatlist,
-    "data_replaceitemoflist": Blocks.data_replaceitemoflist,
-    "data_itemoflist": Blocks.data_itemoflist,
-    "data_lengthoflist": Blocks.data_lengthoflist,
-    "data_listcontainsitem": Blocks.data_listcontainsitem,   
-    "data_showlist": Blocks.data_showlist,
-    "data_hidelist": Blocks.data_hidelist,
-
-    "procedures_definition": Blocks.procedures_definition,
-    "procedures_call": Blocks.procedures_call,
-    "argument_reporter_string_number": Blocks.argument_reporter_string_number,
-    "argument_reporter_boolean": Blocks.argument_reporter_boolean,
-
-    "wedo2_motorOnFor": Blocks.wedo2_motorOnFor,
-    "wedo2_motorOn": Blocks.wedo2_motorOn,
-    "wedo2_motorOff": Blocks.wedo2_motorOff,
-    "wedo2_startMotorPower": Blocks.wedo2_startMotorPower,
-    "wedo2_setMotorDirection": Blocks.wedo2_setMotorDirection,
-    "wedo2_setLightHue": Blocks.wedo2_setLightHue,
-    "wedo2_playNoteFor": Blocks.wedo2_playNoteFor,
-    "wedo2_whenDistance": Blocks.wedo2_whenDistance,
-    "wedo2_whenTilted": Blocks.wedo2_whenTilted,
-    "wedo2_getDistance": Blocks.wedo2_getDistance,
-    "wedo2_isTilted": Blocks.wedo2_isTilted,
-    "wedo2_getTiltAngle": Blocks.wedo2_getTiltAngle,
-}
+for name, obj in funcTuples:
+    Blocks.funcs[name] = obj.__get__(object)
 
 warnings = 0
 blockID = 0
@@ -1342,6 +1162,7 @@ def convert(block, blocks):
         return output
 
 def inputVal(value, block, blocks):
+    global blockID
 
     if not value in block['inputs']:
         return False
@@ -1362,8 +1183,10 @@ def inputVal(value, block, blocks):
             return convert(blocks[out], blocks)
         else:
             if out[0] == 12:
+                blockID += 1
                 return ['readVariable', out[1]]
             elif out[0] == 13:
+                blockID += 1
                 return ['contentsOfList:', out[1]]
             else:
                 try:
@@ -1473,9 +1296,8 @@ totalTargets = len(data['targets'])
 
 scriptCount = 0
 
-for i in range(len(data['targets'])):
+for target in data['targets']:
 
-    target = data['targets'][i]
     sprite = {}
     sprite['objName'] = target['name']
     scripts = []
@@ -1669,7 +1491,7 @@ for i in range(len(data['targets'])):
         sprite['direction'] = target['direction']
         sprite['rotationStyle'] = rotationStyles[target['rotationStyle']]
         sprite['isDraggable'] = target['draggable']
-        sprite['indexInLibrary'] = i
+        sprite['indexInLibrary'] = targetsDone
         sprite['visible'] = target['visible']
         sprite['spriteInfo'] = {}
 
