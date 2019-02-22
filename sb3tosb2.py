@@ -1396,7 +1396,7 @@ class ProjectConverter:
             # Non-variable and non-list monitor (ex: x-position, y-position, volume, etc.)
             self.generateWarning("Stage monitor '{}' will not be converted".format(m['opcode']))
 
-    def convertProject(self, sb3path, sb2path):
+    def convertProject(self, sb3path, sb2path, replace = False):
         
         try:
             self.zfsb3 = zipfile.ZipFile(sb3path, 'r')
@@ -1406,7 +1406,12 @@ class ProjectConverter:
         try:
             self.zfsb2 = zipfile.ZipFile(sb2path, 'x')
         except:
-            printError("File '{}' already exists".format(sb2path))
+            if replace:
+                import os
+                os.remove(sb2path)
+                self.zfsb2 = zipfile.ZipFile(sb2path, 'x')
+            else:
+                printError("File '{}' already exists".format(sb2path))
 
         f = self.zfsb3.open('project.json', 'r')
         self.jsonData = json.loads(f.read())
@@ -1465,10 +1470,23 @@ class ProjectConverter:
 
 if __name__ == '__main__':
 
+    dialog = False
     if len(sys.argv) < 3:
-        printError('3 arguments are needed:\npython sb3tosb2.py [sb3path] [sb2path]')
+        dialog = True
+        import tkinter
+        from tkinter import filedialog
+        root = tkinter.Tk()
+        root.withdraw()
+        sb3path = filedialog.askopenfilename(title = "Open SB3 Project", filetypes = [("Scratch 3 Project", "*.sb3")])
+        sb2path = filedialog.asksaveasfilename(title = "Save as SB2 Project", filetypes = [("Scratch 2 Project", "*.sb2")])
+    else:
+        sb3path = sys.argv[1]
+        sb2path = sys.argv[2]
     
-    warnings = ProjectConverter().convertProject(sys.argv[1], sys.argv[2])
+    if not sb3path[-3:] == 'sb3' or not sb2path[-3:] == 'sb2':
+        printError("Incorrect file extensions")
+    
+    warnings = ProjectConverter().convertProject(sb3path, sb2path, replace = dialog)
 
     if warnings == 0:
         print('Completed with no warnings')
