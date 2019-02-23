@@ -239,8 +239,9 @@ class BlockArgMapper:
         if field == 'number':
             return ['costumeIndex']
         elif field == 'name':
-            self.converter.generateWarning("Incompatible block 'costume [name v]")
-            return ['costumeName']
+            if not self.converter.convertingMonitors:
+                self.converter.generateWarning("Incompatible block 'costume [name v]'")
+                return ['costumeName']
 
     def looks_backdropnumbername(self, block, blocks):
         field = self.converter.fieldVal('NUMBER_NAME', block)
@@ -658,7 +659,8 @@ class BlockArgMapper:
         return ['timestamp']
 
     def sensing_username(self, block, blocks):
-        return ['getUserName']
+        if not self.converter.convertingMonitors:
+            return ['getUserName']
 
     def sensing_userid(self, block, blocks):
         return ['getUserId']
@@ -971,6 +973,14 @@ class ProjectConverter:
         'don\'t rotate': 'none'
     }
 
+    monitorColors = {
+        'motion': 4877524,
+        'looks': 9065943,
+        'sound': 12272323,
+        'music': 12272323,
+        'sensing': 2926050,
+    }
+
     @staticmethod
     def hexToDec(hexNum):
         try:
@@ -993,6 +1003,7 @@ class ProjectConverter:
         self.blockID = 0
         self.comments = []
         self.blockComments = {}
+        self.convertingMonitors = False
 
     def generateWarning(self, message):
         self.warnings += 1
@@ -1355,7 +1366,7 @@ class ProjectConverter:
                 'cmd': 'getVar:',
                 'param': m['params']['VARIABLE'],
                 'color': 15629590,
-                'label': ("" if m['spriteName'] == None else (m['spriteName'] + ": ")) + m['params']['VARIABLE'],
+                'label': ('' if m['spriteName'] == None else (m['spriteName'] + ': ')) + m['params']['VARIABLE'],
                 'mode': ProjectConverter.varModes[m['mode']],
                 'sliderMin': sMin,
                 'sliderMax': sMax,
@@ -1394,10 +1405,47 @@ class ProjectConverter:
             }
 
         else:
-            # Non-variable and non-list monitor (ex: x-position, y-position, volume, etc.)
-            self.generateWarning("Stage monitor '{}' will not be converted".format(m['opcode']))
+
+            try:
+                block = {'opcode': m['opcode']}
+                if 'params' in m:
+                    block['fields'] = {}
+                    for key, value in m['params'].items():
+                        block['fields'][key] = [value]
+                
+                monitor = self.argmapper.mapArgs(m['opcode'], block, {})
+                cmd = monitor[0]
+                if len(monitor) > 1:
+                    param = monitor[1]
+                else:
+                    param = None
+
+                assert cmd != None
+
+                sMin = m['min'] if 'min' in m else m['sliderMin']
+                sMax = m['max'] if 'max' in m else m['sliderMax']
+                monitor = {
+                    'target': 'Stage' if m['spriteName'] == None else m['spriteName'],
+                    'cmd': cmd,
+                    'param': param,
+                    'color': ProjectConverter.monitorColors[m['opcode'].split('_')[0]],
+                    'label': '', # Scratch 2 will handle this
+                    'mode': ProjectConverter.varModes[m['mode']],
+                    'sliderMin': sMin,
+                    'sliderMax': sMax,
+                    'isDiscrete': sMin % 1 == 0 and sMax % 1 == 0 and not('.' in str(sMin)) and not('.' in str(sMax)),
+                    'x': m['x'],
+                    'y': m['y'],
+                    'visible': m['visible']
+                }
+                self.monitors.append(monitor)
+                
+            except:
+                self.generateWarning("Stage monitor '{}' will not be converted".format(m['opcode']))
 
     def convertProject(self, sb3path, sb2path, replace = False):
+
+        self.convertingMonitors = False
         
         try:
             self.zfsb3 = zipfile.ZipFile(sb3path, 'r')
@@ -1449,12 +1497,14 @@ class ProjectConverter:
 
         # Convert monitors
 
+        self.convertingMonitors = True
         for m in self.jsonData['monitors']:
             self.addMonitor(m)
 
         self.updateListData(output, sprites, self.lists)
 
         sprites.extend(self.monitors)
+        self.convertingMonitors = False
 
         output['children'] = sprites
 

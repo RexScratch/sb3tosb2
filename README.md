@@ -25,7 +25,6 @@ Usage (command line)
 
 Known Issues
 -------------
-- Non-variable or list stage monitors won't be converted
 - Some SVG files may not appear correctly, although this is because Scratch 3 modifies them
 - MP3 audio files cannot be converted
 - WAV files imported in Scratch 3.0 are not converted correctly
