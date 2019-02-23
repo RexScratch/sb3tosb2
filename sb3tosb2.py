@@ -1009,33 +1009,23 @@ class ProjectConverter:
                 self.hackedReporterBlockID(value)
 
     def convertBlock(self, block, blocks):
-        self.depth += 1 # Bad solution to track depth
-
         opcode = block['opcode']
-        if self.depth < 1000:
-            self.blockID += 1
-            try:
-                output = self.argmapper.mapArgs(opcode, block, blocks)
-                self.depth -= 1
+        self.blockID += 1
+        try:
+            return self.argmapper.mapArgs(opcode, block, blocks)
+        except:
+            if len(block['inputs']) == 0 and len(block['fields']) == 1 and block['shadow']: # Menu opcodes and shadows
+                self.blockID -= 1
+                return self.fieldVal(list(block['fields'].items())[0][0], block)
+            else:
+                self.generateWarning("Incompatible opcode '{}'".format(opcode))
+                
+                output = [opcode]
+                for i in block['inputs']:
+                    output.append(self.inputVal(i, block, blocks))
+                for f in block['fields']:
+                    output.append(self.fieldVal(f, block))
                 return output
-            except:
-                if len(block['inputs']) == 0 and len(block['fields']) == 1 and block['shadow']: # Menu opcodes and shadows
-                    self.blockID -= 1
-                    output = self.fieldVal(list(block['fields'].items())[0][0], block)
-                    self.depth -= 1
-                    return output
-                else:
-                    output = [opcode]
-                    for i in block['inputs']:
-                        output.append(self.inputVal(i, block, blocks))
-                    for f in block['fields']:
-                        output.append(self.fieldVal(f, block))
-                    self.generateWarning("Incompatible opcode '{}'".format(opcode))
-
-                    self.depth -= 1
-                    return output
-        else: # Stack Overflow
-            return ''
 
     def inputVal(self, value, block, blocks):
 
@@ -1288,7 +1278,6 @@ class ProjectConverter:
                 if y % 1 == 0:
                     y = int(y)
                 
-                self.depth = 0
                 scripts.append([x, y, self.convertSubstack(key, blocks)])
                 self.scriptCount += 1
         
