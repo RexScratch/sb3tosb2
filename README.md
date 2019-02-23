@@ -5,7 +5,7 @@ A simple Python 3 program that converts .sb3 files to .sb2 files
 
 Requirements
 --------------
-- Python 3 (preferably 3.6.2 or higher)
+- Python 3 (preferably 3.6.2 or later)
 
 Installation
 --------------
