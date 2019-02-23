@@ -979,6 +979,7 @@ class ProjectConverter:
         'sound': 12272323,
         'music': 12272323,
         'sensing': 2926050,
+        'data': 15629590
     }
 
     @staticmethod
@@ -1357,27 +1358,7 @@ class ProjectConverter:
 
     def addMonitor(self, m):
 
-        if m['opcode'] == 'data_variable':
-            
-            sMin = m['min'] if 'min' in m else m['sliderMin']
-            sMax = m['max'] if 'max' in m else m['sliderMax']
-            monitor = {
-                'target': 'Stage' if m['spriteName'] == None else m['spriteName'],
-                'cmd': 'getVar:',
-                'param': m['params']['VARIABLE'],
-                'color': 15629590,
-                'label': ('' if m['spriteName'] == None else (m['spriteName'] + ': ')) + m['params']['VARIABLE'],
-                'mode': ProjectConverter.varModes[m['mode']],
-                'sliderMin': sMin,
-                'sliderMax': sMax,
-                'isDiscrete': sMin % 1 == 0 and sMax % 1 == 0 and not('.' in str(sMin)) and not('.' in str(sMax)),
-                'x': m['x'],
-                'y': m['y'],
-                'visible': m['visible']
-            }
-            self.monitors.append(monitor)
-
-        elif m['opcode'] == 'data_listcontents':
+        if m['opcode'] == 'data_listcontents':
 
             monitor = {
                 'listName': m['params']['LIST'],
@@ -1414,7 +1395,7 @@ class ProjectConverter:
                         block['fields'][key] = [value]
                 
                 monitor = self.argmapper.mapArgs(m['opcode'], block, {})
-                cmd = monitor[0]
+                cmd = 'getVar:' if monitor[0] == 'readVariable' else monitor[0]
                 if len(monitor) > 1:
                     param = monitor[1]
                 else:
