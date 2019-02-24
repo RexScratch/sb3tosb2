@@ -1186,9 +1186,11 @@ class ProjectConverter:
             img = f.read()
             if c['dataFormat'] == 'svg':
                 img = str(img)[2:-1]
-                img = img.replace('\\n', '\n')
-                img = img.replace("\\'", "&apos;")
                 img = img.replace('\\\\', '\\')
+                img = img.replace('\\n', '\n')
+                img = img.replace('\\r', '\r')
+                img = img.replace('\\t', '\t')
+                img = img.replace("\\'", "&apos;")
                 img = img.replace('fill="undefined"', '') # Fix broken SVGs
                 img = img.replace('font-family="Sans Serif"', 'font-family="Helvetica"')
                 img = img.replace('font-family="Serif"', 'font-family="Donegal"')
