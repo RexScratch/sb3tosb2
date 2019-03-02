@@ -29,3 +29,4 @@ Known Issues
 - Bitmap images in SVG files may be positioned incorrectly
 - Text containing descenders in SVG files may be incorrectly positioned
 - MP3 audio files cannot be converted
+- 32-bit float WAV files may not be converted correctly
