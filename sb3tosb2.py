@@ -1,4 +1,4 @@
-import sys, json, zipfile
+import sys, json, zipfile, audioop
 
 sys.setrecursionlimit(4100)
 
@@ -1158,11 +1158,34 @@ class ProjectConverter:
 
     def addSound(self, s):
 
+        scount = s['sampleCount']
+        srate = s['rate']
+
         if not s['assetId'] in self.soundAssets:
             self.soundAssets[s['assetId']] = len(self.soundAssets)
             if s['dataFormat'] == 'wav':
                 f = self.zfsb3.open(s['md5ext'], 'r')
-                self.zfsb2.writestr('{}.{}'.format(len(self.soundAssets) - 1, s['dataFormat']), bytes(f.read()))
+                wav = bytes(f.read())
+
+                width = int.from_bytes(wav[34:36], byteorder='little') // 8
+
+                modified = False
+
+                if int.from_bytes(wav[22:24], byteorder='little') == 2: # Convert to mono
+                    wav = wav[0:44] + audioop.tomono(wav[44:], width, 1, 1)
+                    modified = True
+                
+                if srate > 22050: # Downsample
+                    wav = wav[0:44] + audioop.ratecv(wav[44:], width, 1, int.from_bytes(wav[24:28], byteorder='little'), 22050, None)[0]
+                    srate = 22050
+                    modified = True
+
+                if modified: # Update Subchunk2Size and sample count
+                    size = len(wav) - 44
+                    wav = wav[0:40] + size.to_bytes(4, byteorder='little') + wav[44:]
+                    scount = size // width
+
+                self.zfsb2.writestr('{}.{}'.format(len(self.soundAssets) - 1, s['dataFormat']), wav)
                 f.close()
             else:
                 self.generateWarning("Audio file '{}' cannot be converted into WAV".format(s['md5ext']))
@@ -1171,8 +1194,8 @@ class ProjectConverter:
             'soundName': s['name'],
             'soundID': self.soundAssets[s['assetId']],
             'md5': s['assetId'] + '.wav',
-            'sampleCount': s['sampleCount'],
-            'rate': s['rate'],
+            'sampleCount': scount,
+            'rate': srate,
             'format': 'adpcm'
         }
 
