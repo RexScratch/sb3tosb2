@@ -126,7 +126,7 @@ class BlockArgMapper:
         return ['yScroll']
 
     # Looks
-
+    
     def looks_sayforsecs(self, block, blocks):
         output = ['say:duration:elapsed:from:']
         output.append(self.converter.inputVal('MESSAGE', block, blocks))
@@ -217,13 +217,11 @@ class BlockArgMapper:
         if field == 'front':
             return ['comeToFront']
         else:
-            self.converter.generateWarning(
-                "Incompatible block 'go to [back v] layer' will be converted to 'go back (1.79e+308) layers'")
             return ['goBackByLayers:', 1.79e+308]
 
     def looks_goforwardbackwardlayers(self, block, blocks):
         layers = self.converter.inputVal('NUM', block, blocks)
-        field = self.converter.fieldVal('FORWARD', block)
+        field = self.converter.fieldVal('FORWARD_BACKWARD', block)
         if field == 'forward':
             if type(layers) == str:
                 try:
@@ -264,7 +262,7 @@ class BlockArgMapper:
         return ['nextScene']
 
     # Sound
-
+    
     def sound_play(self, block, blocks):
         output = ['playSound:']
         output.append(self.converter.inputVal('SOUND_MENU', block, blocks))
@@ -437,7 +435,7 @@ class BlockArgMapper:
             return ['pen_changeColorParamBy', value, param]
 
     # Events
-
+    
     def event_whenflagclicked(self, block, blocks):
         return ['whenGreenFlag']
 
@@ -479,7 +477,7 @@ class BlockArgMapper:
         return output
 
     # Control
-
+    
     def control_wait(self, block, blocks):
         output = ['wait:elapsed:from:']
         output.append(self.converter.inputVal('DURATION', block, blocks))
@@ -1027,7 +1025,7 @@ class ProjectConverter:
         try:
             return self.argmapper.mapArgs(opcode, block, blocks)
         except:
-            if len(block['inputs']) == 0 and len(block['fields']) == 1 and block['shadow']:  # Menu opcodes and shadows
+            if len(block['inputs']) == 0 and len(block['fields']) == 1 and block['shadow'] and not block['topLevel']:  # Menu opcodes and shadows
                 self.blockID -= 1
                 return self.fieldVal(list(block['fields'].items())[0][0], block)
             else:
@@ -1035,9 +1033,13 @@ class ProjectConverter:
 
                 output = [opcode]
                 for i in block['inputs']:
-                    output.append(self.inputVal(i, block, blocks))
+                    value = self.inputVal(i, block, blocks)
+                    if type(value) != list:
+                        output.append(value)
                 for f in block['fields']:
-                    output.append(self.fieldVal(f, block))
+                    value = self.fieldVal(f, block)
+                    if type(value) != list:
+                        output.append(value)
                 return output
 
     def inputVal(self, value, block, blocks):
@@ -1056,10 +1058,7 @@ class ProjectConverter:
                 output = value[1][1]
         else:
             out = value[1]
-            if type(out) == str:
-                self.setCommentBlockId(out)
-                return self.convertBlock(blocks[out], blocks)
-            else:
+            if type(out) == list:
                 if out[0] == 12:
                     self.blockID += 1
                     return ['readVariable', out[1]]
@@ -1071,6 +1070,12 @@ class ProjectConverter:
                         return out[1]
                     except:
                         return
+            else:
+                try:
+                    self.setCommentBlockId(out)
+                    return self.convertBlock(blocks[out], blocks)
+                except:
+                    return False
 
         outType = value[1][0]
         if outType in [4, 5, 8]:
@@ -1090,7 +1095,7 @@ class ProjectConverter:
                 pass
         elif outType == 9:
             output = ProjectConverter.hexToDec(output)
-
+        
         return ProjectConverter.specialNum(output)
 
     def fieldVal(self, value, block):
@@ -1126,7 +1131,7 @@ class ProjectConverter:
         stack = block['inputs'][stack]
         if len(stack) < 2 or stack[1] == None:
             return []
-
+        
         return self.convertSubstack(stack[1], blocks)
 
     def addComment(self, c):
@@ -1162,43 +1167,55 @@ class ProjectConverter:
         srate = s['rate']
 
         if not s['assetId'] in self.soundAssets:
-            self.soundAssets[s['assetId']] = len(self.soundAssets)
+            self.soundAssets[s['assetId']] = [len(self.soundAssets)]
             if s['dataFormat'] == 'wav':
                 f = self.zfsb3.open(s['md5ext'], 'r')
                 wav = bytes(f.read())
 
                 width = int.from_bytes(wav[34:36], byteorder='little') // 8
                 channels = int.from_bytes(wav[22:24], byteorder='little')
-                srate = int.from_bytes(wav[24:28], byteorder='little') #// channels
+                srate = int.from_bytes(wav[24:28], byteorder='little')
 
                 modified = False
+                error = width * channels == 0 or (len(wav) - 44) % (width * channels) != 0
                 
-                if channels == 2: # Convert to mono
-                    wav = wav[0:44] + audioop.tomono(wav[44:], width, 1, 1)
-                    modified = True
-                
-                if srate > 22050: # Downsample
-                    wav = wav[0:44] + audioop.ratecv(wav[44:], width, 1, srate, 22050, None)[0]
-                    srate = 22050
-                    modified = True
+                if not error:
+                    if channels == 2: # Convert to mono
+                        wav = wav[0:44] + audioop.tomono(wav[44:], width, 1, 1)
+                        modified = True
+                    
+                    if srate > 22050 and not error: # Downsample
+                        wav = wav[0:44] + audioop.ratecv(wav[44:], width, 1, srate, 22050, None)[0]
+                        srate = 22050
+                        modified = True
 
                 if modified:
                     size = len(wav) - 44
                     wav = wav[0:22] + (1).to_bytes(2, byteorder='little') + srate.to_bytes(4, byteorder='little') + wav[28:40] + size.to_bytes(4, byteorder='little') + wav[44:]
                     scount = size // width
+                elif error:
+                    srate = s['rate']
+                    self.generateWarning("Sound '{}' cannot be converted to mono or downsampled".format(s['name']))
 
                 self.zfsb2.writestr('{}.{}'.format(len(self.soundAssets) - 1, s['dataFormat']), wav)
                 f.close()
             else:
-                self.generateWarning("Audio file '{}' cannot be converted into WAV".format(s['md5ext']))
+                # self.generateWarning("Audio file '{}' cannot be converted into WAV".format(s['md5ext']))
+                pass
+            
+            self.soundAssets[s['assetId']].append(scount)
+            self.soundAssets[s['assetId']].append(srate)
+
+        if s['dataFormat'] == 'mp3':
+            self.generateWarning("Sound '{}' cannot be converted into WAV".format(s['name']))
 
         sound = {
             'soundName': s['name'],
-            'soundID': self.soundAssets[s['assetId']],
+            'soundID': self.soundAssets[s['assetId']][0],
             'md5': s['assetId'] + '.wav',
-            'sampleCount': scount,
-            'rate': srate,
-            'format': 'adpcm'
+            'sampleCount': self.soundAssets[s['assetId']][1],
+            'rate': self.soundAssets[s['assetId']][2],
+            'format': ''
         }
 
         self.sounds.append(sound)
@@ -1387,6 +1404,7 @@ class ProjectConverter:
             sprite['currentCostumeIndex'] = target['currentCostume']
             sprite['tempoBPM'] = target['tempo']
             sprite['videoAlpha'] = (100 - target['videoTransparency']) / 100
+            sprite['penLayerMD5'] = ''
 
             sprite['objName'] = 'Stage'
             sprite['info'] = {
