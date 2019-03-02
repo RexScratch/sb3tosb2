@@ -1168,21 +1168,23 @@ class ProjectConverter:
                 wav = bytes(f.read())
 
                 width = int.from_bytes(wav[34:36], byteorder='little') // 8
+                channels = int.from_bytes(wav[22:24], byteorder='little')
+                srate = int.from_bytes(wav[24:28], byteorder='little') #// channels
 
                 modified = False
-
-                if int.from_bytes(wav[22:24], byteorder='little') == 2: # Convert to mono
+                
+                if channels == 2: # Convert to mono
                     wav = wav[0:44] + audioop.tomono(wav[44:], width, 1, 1)
                     modified = True
                 
                 if srate > 22050: # Downsample
-                    wav = wav[0:44] + audioop.ratecv(wav[44:], width, 1, int.from_bytes(wav[24:28], byteorder='little'), 22050, None)[0]
+                    wav = wav[0:44] + audioop.ratecv(wav[44:], width, 1, srate, 22050, None)[0]
                     srate = 22050
                     modified = True
 
-                if modified: # Update Subchunk2Size and sample count
+                if modified:
                     size = len(wav) - 44
-                    wav = wav[0:40] + size.to_bytes(4, byteorder='little') + wav[44:]
+                    wav = wav[0:22] + (1).to_bytes(2, byteorder='little') + srate.to_bytes(4, byteorder='little') + wav[28:40] + size.to_bytes(4, byteorder='little') + wav[44:]
                     scount = size // width
 
                 self.zfsb2.writestr('{}.{}'.format(len(self.soundAssets) - 1, s['dataFormat']), wav)
