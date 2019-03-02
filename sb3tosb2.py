@@ -1,8 +1,11 @@
 import sys, json, zipfile
+
 sys.setrecursionlimit(4100)
+
 
 def printWarning(message):
     print("WARNING: " + message)
+
 
 def printError(message):
     lines = message.split('\n')
@@ -10,6 +13,7 @@ def printError(message):
     lines[0] = "ERROR: " + lines[0][7:]
     print('\n'.join(lines))
     exit()
+
 
 class BlockArgMapper:
 
@@ -107,7 +111,7 @@ class BlockArgMapper:
         output = ['scrollRight']
         output.append(self.converter.inputVal('DISTANCE', block, blocks))
         return output
-    
+
     def motion_scroll_up(self, block, blocks):
         output = ['scrollUp']
         output.append(self.converter.inputVal('DISTANCE', block, blocks))
@@ -123,7 +127,7 @@ class BlockArgMapper:
 
     def motion_yscroll(self, block, blocks):
         return ['yScroll']
-    
+
     # Looks
 
     def looks_sayforsecs(self, block, blocks):
@@ -164,7 +168,7 @@ class BlockArgMapper:
 
     def looks_nextcostume(self, block, blocks):
         return ['nextCostume']
-    
+
     def looks_switchbackdropto(self, block, blocks):
         output = ['startScene']
         output.append(self.converter.inputVal('BACKDROP', block, blocks))
@@ -187,7 +191,7 @@ class BlockArgMapper:
         output.append(field)
         output.append(self.converter.inputVal('VALUE', block, blocks))
         return output
-    
+
     def looks_cleargraphiceffects(self, block, blocks):
         return ['filterReset']
 
@@ -216,7 +220,8 @@ class BlockArgMapper:
         if field == 'front':
             return ['comeToFront']
         else:
-            self.converter.generateWarning("Incompatible block 'go to [back v] layer' will be converted to 'go back (1.79e+308) layers'")
+            self.converter.generateWarning(
+                "Incompatible block 'go to [back v] layer' will be converted to 'go back (1.79e+308) layers'")
             return ['goBackByLayers:', 1.79e+308]
 
     def looks_goforwardbackwardlayers(self, block, blocks):
@@ -267,7 +272,7 @@ class BlockArgMapper:
         output = ['playSound:']
         output.append(self.converter.inputVal('SOUND_MENU', block, blocks))
         return output
-    
+
     def sound_playuntildone(self, block, blocks):
         output = ['doPlaySoundAndWait']
         output.append(self.converter.inputVal('SOUND_MENU', block, blocks))
@@ -275,7 +280,7 @@ class BlockArgMapper:
 
     def sound_stopallsounds(self, block, blocks):
         return ['stopAllSounds']
-    
+
     def sound_changevolumeby(self, block, blocks):
         output = ['changeVolumeBy:']
         output.append(self.converter.inputVal('VOLUME', block, blocks))
@@ -460,12 +465,12 @@ class BlockArgMapper:
         output.append(field)
         output.append(self.converter.inputVal('VALUE', block, blocks))
         return output
-    
+
     def event_whenbroadcastreceived(self, block, blocks):
         output = ['whenIReceive']
         output.append(self.converter.fieldVal('BROADCAST_OPTION', block))
         return output
-    
+
     def event_broadcast(self, block, blocks):
         output = ['broadcast:']
         output.append(self.converter.inputVal('BROADCAST_INPUT', block, blocks))
@@ -482,18 +487,18 @@ class BlockArgMapper:
         output = ['wait:elapsed:from:']
         output.append(self.converter.inputVal('DURATION', block, blocks))
         return output
-    
+
     def control_repeat(self, block, blocks):
         output = ['doRepeat']
         output.append(self.converter.inputVal('TIMES', block, blocks))
         output.append(self.converter.substackVal('SUBSTACK', block, blocks))
         return output
-    
+
     def control_forever(self, block, blocks):
         output = ['doForever']
         output.append(self.converter.substackVal('SUBSTACK', block, blocks))
         return output
-    
+
     def control_if(self, block, blocks):
         output = ['doIf']
         output.append(self.converter.inputVal('CONDITION', block, blocks))
@@ -530,12 +535,12 @@ class BlockArgMapper:
         output.append(self.converter.inputVal('VALUE', block, blocks))
         output.append(self.converter.substackVal('SUBSTACK', block, blocks))
         return output
-    
+
     def control_stop(self, block, blocks):
         output = ['stopScripts']
         output.append(self.converter.fieldVal('STOP_OPTION', block))
         return output
-    
+
     def control_start_as_clone(self, block, blocks):
         return ['whenCloned']
 
@@ -543,7 +548,7 @@ class BlockArgMapper:
         output = ['createCloneOf']
         output.append(self.converter.inputVal('CLONE_OPTION', block, blocks))
         return output
-    
+
     def control_delete_this_clone(self, block, blocks):
         return ['deleteClone']
 
@@ -702,13 +707,13 @@ class BlockArgMapper:
         output.append(self.converter.inputVal('OPERAND1', block, blocks))
         output.append(self.converter.inputVal('OPERAND2', block, blocks))
         return output
-    
+
     def operator_lt(self, block, blocks):
         output = ['<']
         output.append(self.converter.inputVal('OPERAND1', block, blocks))
         output.append(self.converter.inputVal('OPERAND2', block, blocks))
         return output
-    
+
     def operator_equals(self, block, blocks):
         output = ['=']
         output.append(self.converter.inputVal('OPERAND1', block, blocks))
@@ -759,7 +764,7 @@ class BlockArgMapper:
         output = ['rounded']
         output.append(self.converter.inputVal('NUM', block, blocks))
         return output
-    
+
     def operator_mathop(self, block, blocks):
         output = ['computeFunction:of:']
         output.append(self.converter.fieldVal('OPERATOR', block))
@@ -771,7 +776,7 @@ class BlockArgMapper:
     def data_variable(self, block, blocks):
         output = ['readVariable']
         output.append(self.converter.fieldVal('VARIABLE', block))
-        return output   
+        return output
 
     def data_setvariableto(self, block, blocks):
         output = ['setVar:to:']
@@ -799,7 +804,7 @@ class BlockArgMapper:
         output = ['contentsOfList:']
         output.append(self.converter.fieldVal('LIST', block))
         return output
-    
+
     def data_addtolist(self, block, blocks):
         output = ['append:toList:']
         output.append(self.converter.inputVal('ITEM', block, blocks))
@@ -811,7 +816,7 @@ class BlockArgMapper:
         output.append(self.converter.inputVal('INDEX', block, blocks))
         output.append(self.converter.fieldVal('LIST', block))
         return output
-    
+
     def data_deletealloflist(self, block, blocks):
         output = ['deleteLine:ofList:', 'all']
         output.append(self.converter.fieldVal('LIST', block))
@@ -911,7 +916,7 @@ class BlockArgMapper:
         output = ['LEGO WeDo 2.0\u001fmotorOff']
         output.append(self.converter.inputVal('MOTOR_ID', block, blocks))
         return output
-    
+
     def wedo2_startMotorPower(self, block, blocks):
         output = ['LEGO WeDo 2.0\u001fstartMotorPower']
         output.append(self.converter.inputVal('MOTOR_ID', block, blocks))
@@ -959,8 +964,8 @@ class BlockArgMapper:
         output.append(self.converter.inputVal('TILT_DIRECTION', block, blocks))
         return output
 
-class ProjectConverter:
 
+class ProjectConverter:
     varModes = {
         'default': 1,
         'large': 2,
@@ -1013,7 +1018,7 @@ class ProjectConverter:
     def setCommentBlockId(self, id):
         if id in self.blockComments:
             self.comments[self.blockComments[id]][5] = self.blockID
-    
+
     def hackedReporterBlockID(self, reporter):
         self.blockID += 1
         for value in reporter:
@@ -1026,12 +1031,12 @@ class ProjectConverter:
         try:
             return self.argmapper.mapArgs(opcode, block, blocks)
         except:
-            if len(block['inputs']) == 0 and len(block['fields']) == 1 and block['shadow']: # Menu opcodes and shadows
+            if len(block['inputs']) == 0 and len(block['fields']) == 1 and block['shadow']:  # Menu opcodes and shadows
                 self.blockID -= 1
                 return self.fieldVal(list(block['fields'].items())[0][0], block)
             else:
                 self.generateWarning("Incompatible opcode '{}'".format(opcode))
-                
+
                 output = [opcode]
                 for i in block['inputs']:
                     output.append(self.inputVal(i, block, blocks))
@@ -1052,7 +1057,7 @@ class ProjectConverter:
                 self.setCommentBlockId(value[1])
                 return self.convertBlock(blocks[value[1]], blocks)
             else:
-                output = value[1][1]        
+                output = value[1][1]
         else:
             out = value[1]
             if type(out) == str:
@@ -1070,7 +1075,7 @@ class ProjectConverter:
                         return out[1]
                     except:
                         return
-        
+
         outType = value[1][0]
         if outType in [4, 5, 8]:
             try:
@@ -1152,7 +1157,7 @@ class ProjectConverter:
 
         if c['blockId'] != None:
             self.blockComments[c['blockId']] = len(self.comments)
-        
+
         self.comments.append(comment)
 
     def addSound(self, s):
@@ -1165,7 +1170,7 @@ class ProjectConverter:
                 f.close()
             else:
                 self.generateWarning("Audio file '{}' cannot be converted into WAV".format(s['md5ext']))
-        
+
         sound = {
             'soundName': s['name'],
             'soundID': self.soundAssets[s['assetId']],
@@ -1178,24 +1183,78 @@ class ProjectConverter:
         self.sounds.append(sound)
 
     def addCostume(self, c):
-        
+
         if not c['assetId'] in self.costumeAssets:
             self.costumeAssets[c['assetId']] = len(self.costumeAssets)
 
             f = self.zfsb3.open(c['md5ext'], 'r')
             img = f.read()
             if c['dataFormat'] == 'svg':
-                img = str(img)[2:-1]
-                img = img.replace('\\\\', '\\')
-                img = img.replace('\\n', '\n')
-                img = img.replace('\\r', '\r')
-                img = img.replace('\\t', '\t')
-                img = img.replace("\\'", "&apos;")
-                img = img.replace('fill="undefined"', '') # Fix broken SVGs
-                img = img.replace('font-family="Sans Serif"', 'font-family="Helvetica"')
-                img = img.replace('font-family="Serif"', 'font-family="Donegal"')
-                img = img.replace('font-family="Handwriting"', 'font-family="Gloria"')
-                img = img.replace('font-family="Curly"', 'font-family="Mystery"')
+                img = str(img, encoding='utf-8')
+
+                # Remove incorrect attributes added by Scratch 3.0
+                # The correct values are found in the style attribute
+
+                img = img.replace('fill="undefined"', '')  # Remove undefined fill
+                
+                # Remove incorrect stroke-width
+                if ';stroke-width:' in img: # Check if stroke-width is in style attribute (may incorrectly remove some stroke-width attributes)
+                    left = 0 
+                    while left != -1:
+                        left = img.find('stroke-width="', left)
+                        if left != -1:
+                            right = img.find('"', left + 14) + 1
+                            img = img[0:left] + '' + img[right:]
+                            left = right
+
+                # Replace tspan elements with text elements, which aren't supported by Scratch 2.0
+
+                if 'tspan' in img:
+
+                    newImg = ''
+                    left = 0
+                    while left != -1:
+                        oldLeft = left
+                        left = img.find('<text', left)
+                        if left != -1:
+                            newImg += img[oldLeft:left]
+                            right = img.find('</text>', left) + 7
+
+                            innerLeft = img.find('>', left) + 1
+                            attrs = img[left:innerLeft - 1] + ' '
+                            i = attrs.find('id="') # Remove id attribute
+                            if i != -1:
+                                j = attrs.find('"', i + 4)
+                                attrs = attrs[0:i] + attrs[j+1:]
+                            attrs = attrs.replace('font-family="Sans Serif"', 'font-family="Helvetica"')
+                            attrs = attrs.replace('font-family="Serif"', 'font-family="Donegal"')
+                            attrs = attrs.replace('font-family="Handwriting"', 'font-family="Gloria"')
+                            attrs = attrs.replace('font-family="Curly"', 'font-family="Mystery"')
+                            attrs = attrs.replace('xml:space="preserve"', '')
+                            
+                            text = attrs + 'dy = "1.13em">'
+                            left = right
+
+                            content = img[innerLeft:right - 7]
+                            if 'tspan' in content:
+                                while innerLeft != -1:
+                                    innerLeft = img.find('<tspan', innerLeft, right)
+                                    if innerLeft != -1:
+                                        innerLeft += 6
+                                        innerLeft = img.find('>', innerLeft, right) + 1
+                                        innerRight = img.find('</tspan>', innerLeft, right)
+                                        text += img[innerLeft:innerRight] + '\n'
+                                        innerLeft = innerRight + 7
+                                
+                                text = text[0:-1] + '</text>'
+                            else:
+                                text += content + '</text>'
+                            newImg += text
+                            left = right
+                        else:
+                            newImg += img[oldLeft:]
+
+                    img = newImg
             else:
                 img = bytes(img)
             self.zfsb2.writestr('{}.{}'.format(len(self.costumeAssets) - 1, c['dataFormat']), img)
@@ -1217,7 +1276,7 @@ class ProjectConverter:
     def convertTarget(self, target, index):
 
         sprite = {}
-        
+
         sprite['objName'] = target['name']
         scripts = []
         variables = []
@@ -1254,8 +1313,8 @@ class ProjectConverter:
 
         for key, c in target['comments'].items():
             self.addComment(c)
-        
-        blocks = target['blocks'] 
+
+        blocks = target['blocks']
         self.blockID = 0
 
         for key, b in blocks.items():
@@ -1291,10 +1350,10 @@ class ProjectConverter:
                 y = round(b['y'] / 1.8, 6)
                 if y % 1 == 0:
                     y = int(y)
-                
+
                 scripts.append([x, y, self.convertSubstack(key, blocks)])
                 self.scriptCount += 1
-        
+
         sprite['scripts'] = scripts
         sprite['variables'] = variables
         sprite['lists'] = lists
@@ -1329,7 +1388,7 @@ class ProjectConverter:
 
         print("Finished converting '{}' ({}/{})".format(sprite['objName'], index + 1, self.totalTargets))
 
-        return (isStage, sprite) 
+        return (isStage, sprite)
 
     def updateList(self, l, ls):
         l['x'] = ls['x']
@@ -1395,7 +1454,7 @@ class ProjectConverter:
                     block['fields'] = {}
                     for key, value in m['params'].items():
                         block['fields'][key] = [value]
-                
+
                 monitor = self.argmapper.mapArgs(m['opcode'], block, {})
                 cmd = 'getVar:' if monitor[0] == 'readVariable' else monitor[0]
                 if len(monitor) > 1:
@@ -1412,24 +1471,24 @@ class ProjectConverter:
                     'cmd': cmd,
                     'param': param,
                     'color': ProjectConverter.monitorColors[m['opcode'].split('_')[0]],
-                    'label': '', # Scratch 2 will handle this
+                    'label': '',  # Scratch 2 will handle this
                     'mode': ProjectConverter.varModes[m['mode']],
                     'sliderMin': sMin,
                     'sliderMax': sMax,
-                    'isDiscrete': sMin % 1 == 0 and sMax % 1 == 0 and not('.' in str(sMin)) and not('.' in str(sMax)),
+                    'isDiscrete': sMin % 1 == 0 and sMax % 1 == 0 and not ('.' in str(sMin)) and not ('.' in str(sMax)),
                     'x': m['x'],
                     'y': m['y'],
                     'visible': m['visible']
                 }
                 self.monitors.append(monitor)
-                
+
             except:
                 self.generateWarning("Stage monitor '{}' will not be converted".format(m['opcode']))
 
-    def convertProject(self, sb3path, sb2path, replace = False):
+    def convertProject(self, sb3path, sb2path, replace=False):
 
         self.convertingMonitors = False
-        
+
         try:
             self.zfsb3 = zipfile.ZipFile(sb3path, 'r')
         except:
@@ -1438,12 +1497,19 @@ class ProjectConverter:
         try:
             self.zfsb2 = zipfile.ZipFile(sb2path, 'x')
         except:
+            replaceFile = False
             if replace:
+                replaceFile = True
+            else:
+                print("File '{}' already exists".format(sb2path))
+                replaceFile = input("Overwrite '{}'? (Y/N): ".format(sb2path))
+                replaceFile = replaceFile == 'Y' or replaceFile == 'y'
+            if replaceFile:
                 import os
                 os.remove(sb2path)
                 self.zfsb2 = zipfile.ZipFile(sb2path, 'x')
             else:
-                printError("File '{}' already exists".format(sb2path))
+                exit()
 
         f = self.zfsb3.open('project.json', 'r')
         self.jsonData = json.loads(f.read())
@@ -1456,7 +1522,7 @@ class ProjectConverter:
         sprites = []
 
         targetsDone = 0
-        
+
         self.totalTargets = len(self.jsonData['targets'])
         self.scriptCount = 0
         self.warnings = 0
@@ -1502,6 +1568,7 @@ class ProjectConverter:
 
         return self.warnings
 
+
 if __name__ == '__main__':
 
     dialog = False
@@ -1509,18 +1576,19 @@ if __name__ == '__main__':
         dialog = True
         import tkinter
         from tkinter import filedialog
+
         root = tkinter.Tk()
         root.withdraw()
-        sb3path = filedialog.askopenfilename(title = "Open SB3 Project", filetypes = [("Scratch 3 Project", "*.sb3")])
-        sb2path = filedialog.asksaveasfilename(title = "Save as SB2 Project", filetypes = [("Scratch 2 Project", "*.sb2")])
+        sb3path = filedialog.askopenfilename(title="Open SB3 Project", filetypes=[("Scratch 3 Project", "*.sb3")])
+        sb2path = filedialog.asksaveasfilename(title="Save as SB2 Project", filetypes=[("Scratch 2 Project", "*.sb2")])
     else:
         sb3path = sys.argv[1]
         sb2path = sys.argv[2]
-    
+
     if not sb3path[-3:] == 'sb3' or not sb2path[-3:] == 'sb2':
         printError("Incorrect file extensions")
-    
-    warnings = ProjectConverter().convertProject(sb3path, sb2path, replace = dialog)
+
+    warnings = ProjectConverter().convertProject(sb3path, sb2path, replace=dialog)
 
     if warnings == 0:
         print('Completed with no warnings')
