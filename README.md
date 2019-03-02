@@ -28,4 +28,3 @@ Known Issues
 - Stroke width in SVG files may be incorrect
 - Text containing descenders in SVG files may be incorrectly positioned
 - MP3 audio files cannot be converted
-- WAV files imported in Scratch 3.0 are not converted correctly
