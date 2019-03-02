@@ -2,10 +2,8 @@ import sys, json, zipfile
 
 sys.setrecursionlimit(4100)
 
-
 def printWarning(message):
     print("WARNING: " + message)
-
 
 def printError(message):
     lines = message.split('\n')
@@ -13,7 +11,6 @@ def printError(message):
     lines[0] = "ERROR: " + lines[0][7:]
     print('\n'.join(lines))
     exit()
-
 
 class BlockArgMapper:
 
@@ -964,7 +961,6 @@ class BlockArgMapper:
         output.append(self.converter.inputVal('TILT_DIRECTION', block, blocks))
         return output
 
-
 class ProjectConverter:
     varModes = {
         'default': 1,
@@ -1567,7 +1563,6 @@ class ProjectConverter:
         self.zfsb2.writestr('project.json', output)
 
         return self.warnings
-
 
 if __name__ == '__main__':
 
