@@ -1193,28 +1193,32 @@ class ProjectConverter:
                     size = len(wav) - 44
                     wav = wav[0:22] + (1).to_bytes(2, byteorder='little') + srate.to_bytes(4, byteorder='little') + wav[28:40] + size.to_bytes(4, byteorder='little') + wav[44:]
                     scount = size // width
-                elif error:
+                    self.soundAssets[s['assetId']].append(False)
+                elif error and not srate <= 22050 and not channels == 1:
                     srate = s['rate']
-                    self.generateWarning("Sound '{}' cannot be converted to mono or downsampled".format(s['name']))
+                    self.soundAssets[s['assetId']].append(True)
+                else:
+                    self.soundAssets[s['assetId']].append(False)
 
                 self.zfsb2.writestr('{}.{}'.format(len(self.soundAssets) - 1, s['dataFormat']), wav)
                 f.close()
             else:
-                # self.generateWarning("Audio file '{}' cannot be converted into WAV".format(s['md5ext']))
-                pass
+                self.soundAssets[s['assetId']].append(False)
             
             self.soundAssets[s['assetId']].append(scount)
             self.soundAssets[s['assetId']].append(srate)
 
-        if s['dataFormat'] == 'mp3':
+        if s['dataFormat'] != 'wav':
             self.generateWarning("Sound '{}' cannot be converted into WAV".format(s['name']))
+        elif self.soundAssets[s['assetId']][1] == True:
+            self.generateWarning("Sound '{}' cannot be converted to mono or downsampled".format(s['name']))
 
         sound = {
             'soundName': s['name'],
             'soundID': self.soundAssets[s['assetId']][0],
             'md5': s['assetId'] + '.wav',
-            'sampleCount': self.soundAssets[s['assetId']][1],
-            'rate': self.soundAssets[s['assetId']][2],
+            'sampleCount': self.soundAssets[s['assetId']][2],
+            'rate': self.soundAssets[s['assetId']][3],
             'format': ''
         }
 
@@ -1245,6 +1249,39 @@ class ProjectConverter:
                             img = img[0:left] + '' + img[right:]
                             left = right
 
+                # Reposition bitmap images to their correct position
+
+                if 'image' in img:
+
+                    left = 0
+                    while left != -1:
+                        left = img.find('<image ', left)
+                        if left != -1:
+                            right = img.find('xlink:href=', left)
+                            image = img[left:right]
+
+                            try:
+                                xLeft = image.find('x="')
+                                xRight = image.find('"', xLeft + 3)
+                                trX = float(image[xLeft+3:xRight])
+                                image = image[0:xLeft] + image[xRight+1:]
+
+                                yLeft = image.find('y="')
+                                yRight = image.find('"', yLeft + 3)
+                                trY = float(image[yLeft+3:yRight])
+                                image = image[0:yLeft] + image[yRight+1:]
+
+                                transformLeft = image.find('transform="')
+                                transformRight = image.find('"', transformLeft + 11)
+                                image = image[0:transformRight] + 'translate({} {})'.format(trX, trY) + image[transformRight:]
+
+                                img = img[0:left] + image + img[right:]
+                            except:
+                                # self.generateWarning("Costume '{}' may have incorrect bitmap image positioning".format(c['name']))
+                                pass
+
+                            left += 1
+
                 # Replace tspan elements with text elements, which aren't supported by Scratch 2.0
 
                 if 'tspan' in img:
@@ -1269,6 +1306,28 @@ class ProjectConverter:
                             attrs = attrs.replace('font-family="Handwriting"', 'font-family="Gloria"')
                             attrs = attrs.replace('font-family="Curly"', 'font-family="Mystery"')
                             attrs = attrs.replace('xml:space="preserve"', '')
+
+                            left = right
+
+                            # Remove tspan elements
+                            text = ''
+                            lineCount = 0
+                            content = img[innerLeft:right - 7]
+                            if 'tspan' in content:
+                                while innerLeft != -1:
+                                    innerLeft = img.find('<tspan', innerLeft, right)
+                                    if innerLeft != -1:
+                                        lineCount += 1
+                                        innerLeft += 6
+                                        innerLeft = img.find('>', innerLeft, right) + 1
+                                        innerRight = img.find('</tspan>', innerLeft, right)
+                                        text += img[innerLeft:innerRight] + '\n'
+                                        innerLeft = innerRight + 7
+                                
+                                text = text[0:-1]
+                                text = text + '</text>'
+                            else:
+                                text += content + '</text>'
 
                             # Fix misplaced text
                             matLeft = attrs.find('matrix')
@@ -1325,28 +1384,16 @@ class ProjectConverter:
                                             i += 1
                                         scX = float(scX)
                                         scY = float(scY)
-                                        matrix = 'matrix({} 0 0 {} {} {})'.format(scX, scY, trX + 2.5 * scX, trY - 25 * scY)
+                                        if lineCount > 1:
+                                            trY -= 40 * scY
+                                        else:
+                                            trY -= 25 * scY
+                                        matrix = 'matrix({} 0 0 {} {} {})'.format(scX, scY, trX, trY)
                                         attrs = attrs[0:trLeft] + matrix + attrs[scRight:]
                                     except:
                                         self.generateWarning("Costume '{}' may have incorrect text positioning".format(c['name']))
-                            
-                            text = attrs + '>'
-                            left = right
 
-                            content = img[innerLeft:right - 7]
-                            if 'tspan' in content:
-                                while innerLeft != -1:
-                                    innerLeft = img.find('<tspan', innerLeft, right)
-                                    if innerLeft != -1:
-                                        innerLeft += 6
-                                        innerLeft = img.find('>', innerLeft, right) + 1
-                                        innerRight = img.find('</tspan>', innerLeft, right)
-                                        text += img[innerLeft:innerRight] + '\n'
-                                        innerLeft = innerRight + 7
-                                
-                                text = text[0:-1] + '</text>'
-                            else:
-                                text += content + '</text>'
+                            text = attrs + '>' + text
                             newImg += text
                             left = right
                         else:
