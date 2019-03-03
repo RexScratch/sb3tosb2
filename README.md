@@ -25,6 +25,5 @@ Usage (command line)
 
 Known Issues
 -------------
-- Bitmap images in SVG files may be positioned incorrectly
 - MP3 audio files cannot be converted
 - 32-bit float WAV files may not be converted correctly
