@@ -1269,8 +1269,68 @@ class ProjectConverter:
                             attrs = attrs.replace('font-family="Handwriting"', 'font-family="Gloria"')
                             attrs = attrs.replace('font-family="Curly"', 'font-family="Mystery"')
                             attrs = attrs.replace('xml:space="preserve"', '')
+
+                            # Fix misplaced text
+                            matLeft = attrs.find('matrix')
+                            if matLeft != -1:
+                                try:
+                                    matRight = attrs.find('"', matLeft)
+                                    matrix = attrs[matLeft:matRight].split(' ')
+                                    x = matrix[-2]
+                                    if x[-1] == ',':
+                                        x = x[0:-1]
+                                    scX = matrix[0][7:]
+                                    if scX[-1] == ',':
+                                        scX = scX[0:-1]
+                                    matrix[-2] = str(float(x) - 2.5 * float(scX))
+                                    scY = matrix[3]
+                                    if scY[-1] == ',':
+                                        scY = scY[0:-1]
+                                    matrix[-1] = str(float(matrix[-1][0:-1]) + 2.5 * float(scY)) + ')'
+                                    matrix = ' '.join(matrix)
+                                    attrs = attrs[0:matLeft] + matrix + attrs[matRight:]
+                                except:
+                                    self.generateWarning("Costume '{}' may have incorrect text positioning".format(c['name']))
+                            else:
+                                trLeft = attrs.find('translate')
+                                scLeft = attrs.find('scale')
+                                if not (trLeft == -1 or scLeft == -1):
+                                    try:
+                                        scRight = attrs.find('"', scLeft)
+
+                                        i = trLeft + 10
+                                        trX = ''
+                                        while attrs[i] not in ', ':
+                                            trX += attrs[i]
+                                            i += 1
+                                        while attrs[i] in ', ':
+                                            i += 1
+                                        trY = ''
+                                        while attrs[i] not in ' )':
+                                            trY += attrs[i]
+                                            i += 1
+                                        trX = float(trX)
+                                        trY = float(trY)
+
+                                        i = scLeft + 6
+                                        scX = ''
+                                        while attrs[i] not in ', ':
+                                            scX += attrs[i]
+                                            i += 1
+                                        while attrs[i] in ', ':
+                                            i += 1
+                                        scY = ''
+                                        while attrs[i] not in ' )':
+                                            scY += attrs[i]
+                                            i += 1
+                                        scX = float(scX)
+                                        scY = float(scY)
+                                        matrix = 'matrix({} 0 0 {} {} {})'.format(scX, scY, trX + 2.5 * scX, trY - 25 * scY)
+                                        attrs = attrs[0:trLeft] + matrix + attrs[scRight:]
+                                    except:
+                                        self.generateWarning("Costume '{}' may have incorrect text positioning".format(c['name']))
                             
-                            text = attrs + 'dy = "1.13em">'
+                            text = attrs + '>'
                             left = right
 
                             content = img[innerLeft:right - 7]
