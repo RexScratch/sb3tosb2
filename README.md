@@ -25,7 +25,6 @@ Usage (command line)
 
 Known Issues
 -------------
-- Stroke width in SVG files may be incorrect
 - Bitmap images in SVG files may be positioned incorrectly
 - Text containing descenders in SVG files may be incorrectly positioned
 - MP3 audio files cannot be converted
