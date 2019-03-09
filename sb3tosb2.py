@@ -390,6 +390,15 @@ class BlockArgMapper:
         param = self.converter.inputVal('COLOR_PARAM', block, blocks)
         value = self.converter.inputVal('VALUE', block, blocks)
         if param == 'color':
+            if type(value) == str:
+                try:
+                    value = float(value)
+                except:
+                    pass
+            if type(value) == float or type(value) == int:
+                value *= 2
+            else:
+                value = ['*', 2, value]
             output = ['setPenHueTo:']
             output.append(value)
             return output
@@ -414,6 +423,15 @@ class BlockArgMapper:
         param = self.converter.inputVal('COLOR_PARAM', block, blocks)
         value = self.converter.inputVal('VALUE', block, blocks)
         if param == 'color':
+            if type(value) == str:
+                try:
+                    value = float(value)
+                except:
+                    pass
+            if type(value) == float or type(value) == int:
+                value *= 2
+            else:
+                value = ['*', 2, value]
             output = ['changePenHueBy:']
             output.append(value)
             return output
