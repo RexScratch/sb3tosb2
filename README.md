@@ -20,8 +20,8 @@ Usage
 Usage (command line)
 --------------
 1. Open the terminal or command prompt and navigate to the directory of the sb3tosb2.py file.
-2. Type in the following command: `python sb3tosb2.py [sb3 location] [sb2 location]`
-3. If an error is given, make sure there isn't already an sb2 file at the specified location.
+2. Enter the following command: `python sb3tosb2.py [sb3 location] [sb2 location]`
+3. If an error is given, make sure you entered a valid sb3 file.
 
 Known Issues
 -------------
