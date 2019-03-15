@@ -10,6 +10,7 @@ def printError(message):
     lines = ["       " + line for line in lines]
     lines[0] = "ERROR: " + lines[0][7:]
     print('\n'.join(lines))
+    input('Press enter to exit... ')
     exit()
 
 class BlockArgMapper:
@@ -231,6 +232,7 @@ class BlockArgMapper:
             if type(layers) == float or type(layers) == int:
                 layers *= -1
             else:
+                self.converter.blockID += 1
                 layers = ['*', -1, layers]
         return ['goBackByLayers:', layers]
 
@@ -398,6 +400,7 @@ class BlockArgMapper:
             if type(value) == float or type(value) == int:
                 value *= 2
             else:
+                self.converter.blockID += 1
                 value = ['*', 2, value]
             output = ['setPenHueTo:']
             output.append(value)
@@ -411,6 +414,7 @@ class BlockArgMapper:
             if type(value) == float or type(value) == int:
                 value /= 2
             else:
+                self.converter.blockID += 1
                 value = ['/', value, 2]
             output = ['setPenShadeTo:']
             output.append(value)
@@ -431,6 +435,7 @@ class BlockArgMapper:
             if type(value) == float or type(value) == int:
                 value *= 2
             else:
+                self.converter.blockID += 1
                 value = ['*', 2, value]
             output = ['changePenHueBy:']
             output.append(value)
@@ -444,6 +449,7 @@ class BlockArgMapper:
             if type(value) == float or type(value) == int:
                 value /= 2
             else:
+                self.converter.blockID += 1
                 value = ['/', value, 2]
             output = ['changePenShadeBy:']
             output.append(value)
@@ -1650,6 +1656,15 @@ class ProjectConverter:
                 self.generateWarning("Stage monitor '{}' will not be converted".format(m['opcode']))
 
     def convertProject(self, sb3path, sb2path, replace=False):
+        
+        self.warnings = 0
+
+        if not sb3path[-3:] == 'sb3':
+            printError("File '{}' is not an sb3 file".format(sb3path))
+
+        if not sb2path[-3:] == 'sb2':
+            self.generateWarning("The converted project will be saved to '{}' instead of '{}'".format(sb2path + '.sb2', sb2path))
+            sb2path += '.sb2'
 
         self.convertingMonitors = False
 
@@ -1689,7 +1704,6 @@ class ProjectConverter:
 
         self.totalTargets = len(self.jsonData['targets'])
         self.scriptCount = 0
-        self.warnings = 0
 
         # Convert Stage and sprites
 
@@ -1730,7 +1744,7 @@ class ProjectConverter:
 
         self.zfsb2.writestr('project.json', output)
 
-        return self.warnings
+        return (self.warnings, sb2path)
 
 if __name__ == '__main__':
 
@@ -1745,17 +1759,16 @@ if __name__ == '__main__':
         sb3path = filedialog.askopenfilename(title="Open SB3 Project", filetypes=[("Scratch 3 Project", "*.sb3")])
         sb2path = filedialog.asksaveasfilename(title="Save as SB2 Project", filetypes=[("Scratch 2 Project", "*.sb2")])
     else:
-        sb3path = sys.argv[1]
-        sb2path = sys.argv[2]
+        sb3path = sys.argv[-2]
+        sb2path = sys.argv[-1]
 
-    if not sb3path[-3:] == 'sb3' or not sb2path[-3:] == 'sb2':
-        printError("Incorrect file extensions")
-
-    warnings = ProjectConverter().convertProject(sb3path, sb2path, replace=dialog)
+    result = ProjectConverter().convertProject(sb3path, sb2path, replace=dialog)
+    warnings = result[0]
+    sb2path = result[1]
 
     if warnings == 0:
-        print('Completed with no warnings')
+        print('Saved to {} with no warnings'.format(sb2path))
     elif warnings == 1:
-        print('Completed with {} warning'.format(warnings))
+        print('Saved to {} with {} warning'.format(sb2path, warnings))
     else:
-        print('Completed with {} warnings'.format(warnings))
+        print('Saved to {} with {} warnings'.format(sb2path, warnings))
