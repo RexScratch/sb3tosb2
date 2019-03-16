@@ -1,4 +1,4 @@
-import sys, json, zipfile, audioop
+import sys, json, zipfile, audioop, hashlib
 
 sys.setrecursionlimit(4100)
 
@@ -1284,7 +1284,10 @@ class ProjectConverter:
         srate = s['rate']
 
         if not s['assetId'] in self.soundAssets:
+
+            md5 = s['assetId']
             self.soundAssets[s['assetId']] = [len(self.soundAssets)]
+
             if s['dataFormat'] == 'wav':
                 f = self.zfsb3.open(s['md5ext'], 'r')
                 wav = bytes(f.read())
@@ -1311,6 +1314,7 @@ class ProjectConverter:
                     wav = wav[0:22] + (1).to_bytes(2, byteorder='little') + srate.to_bytes(4, byteorder='little') + wav[28:40] + size.to_bytes(4, byteorder='little') + wav[44:]
                     scount = size // width
                     self.soundAssets[s['assetId']].append(False)
+                    md5 = hashlib.md5(wav).hexdigest()
                 elif error and not srate <= 22050 and not channels == 1:
                     srate = s['rate']
                     self.soundAssets[s['assetId']].append(True)
@@ -1324,18 +1328,20 @@ class ProjectConverter:
             
             self.soundAssets[s['assetId']].append(scount)
             self.soundAssets[s['assetId']].append(srate)
+            self.soundAssets[s['assetId']].append(md5)
 
         if s['dataFormat'] != 'wav':
             self.generateWarning("Sound '{}' cannot be converted into WAV".format(s['name']))
         elif self.soundAssets[s['assetId']][1] == True:
             self.generateWarning("Sound '{}' cannot be converted to mono or downsampled".format(s['name']))
 
+        fileData = self.soundAssets[s['assetId']]
         sound = {
             'soundName': s['name'],
-            'soundID': self.soundAssets[s['assetId']][0],
-            'md5': s['assetId'] + '.wav',
-            'sampleCount': self.soundAssets[s['assetId']][2],
-            'rate': self.soundAssets[s['assetId']][3],
+            'soundID': fileData[0],
+            'md5': fileData[4] + '.wav',
+            'sampleCount': fileData[2],
+            'rate': fileData[3],
             'format': ''
         }
 
@@ -1344,7 +1350,8 @@ class ProjectConverter:
     def addCostume(self, c):
 
         if not c['assetId'] in self.costumeAssets:
-            self.costumeAssets[c['assetId']] = len(self.costumeAssets)
+            md5ext = c['md5ext']
+            self.costumeAssets[c['assetId']] = [len(self.costumeAssets)]
 
             f = self.zfsb3.open(c['md5ext'], 'r')
             img = f.read()
@@ -1517,15 +1524,20 @@ class ProjectConverter:
                             newImg += img[oldLeft:]
 
                     img = newImg
+                
+                md5ext = hashlib.md5(img.encode('utf-8')).hexdigest() + '.svg'
             else:
                 img = bytes(img)
             self.zfsb2.writestr('{}.{}'.format(len(self.costumeAssets) - 1, c['dataFormat']), img)
             f.close()
 
+            self.costumeAssets[c['assetId']].append(md5ext)
+
+        fileData = self.costumeAssets[c['assetId']]
         costume = {
             'costumeName': c['name'],
-            'baseLayerID': self.costumeAssets[c['assetId']],
-            'baseLayerMD5': c['md5ext'],
+            'baseLayerID': fileData[0],
+            'baseLayerMD5': fileData[1],
             'rotationCenterX': c['rotationCenterX'],
             'rotationCenterY': c['rotationCenterY']
         }
