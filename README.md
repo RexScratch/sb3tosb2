@@ -36,4 +36,4 @@ Known Issues
 - MP3 audio files cannot be converted
 - 32-bit float WAV files may not be converted correctly
 - Compatibility mode changes variable monitor labels
-- Compatibility mode only allows ([ v] of [ v]) to access variables (not attributes like x position, backdrop #, etc.)
+- Compatibility mode allows ([ v] of [ v]) to access only variables (not attributes like x position, backdrop #, etc.)
