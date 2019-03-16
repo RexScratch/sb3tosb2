@@ -14,6 +14,22 @@ def printError(message):
     exit()
 
 class BlockArgMapper:
+    
+    stageAttrs = {
+        'backdrop #',
+        'backdrop name',
+        'volume'
+    }
+
+    spriteAttrs = {
+        'x position',
+        'y position',
+        'direction',
+        'costume #',
+        'costume name',
+        'size',
+        'volume'
+    }
 
     def __init__(self, obj):
         assert type(obj) == ProjectConverter
@@ -22,6 +38,16 @@ class BlockArgMapper:
     def mapArgs(self, opcode, block, blocks):
         assert not opcode.startswith('__')
         return getattr(self, opcode)(block, blocks)
+
+    def varName(self, name):
+        if type(name) == str:
+            return ('_' if self.converter.compat else '') + name
+        else:
+            if self.converter.compat:
+                self.converter.blockID += 1
+                return ['concatenate:with:', '_', name]
+            else:
+                return name
 
     # Motion
 
@@ -242,8 +268,12 @@ class BlockArgMapper:
             return ['costumeIndex']
         elif field == 'name':
             if not self.converter.convertingMonitors:
-                self.converter.generateWarning("Incompatible block 'costume [name v]'")
-                return ['costumeName']
+                if self.converter.compat: # Can't use getAttribute:of: because it doesn't work for clones
+                    self.converter.costumeName = True
+                    return ['getLine:ofList:', ['costumeIndex'], self.converter.compatVarName('costume names')]
+                else:
+                    self.converter.generateWarning("Incompatible block 'costume [name v]'")
+                    return ['costumeName']
 
     def looks_backdropnumbername(self, block, blocks):
         field = self.converter.fieldVal('NUMBER_NAME', block)
@@ -348,10 +378,18 @@ class BlockArgMapper:
         return ['stampCostume']
 
     def pen_penDown(self, block, blocks):
-        return ['putPenDown']
+        if self.converter.compat:
+            self.converter.penUpDown = True
+            return ['call', 'pen down']
+        else:
+            return ['putPenDown']
 
     def pen_penUp(self, block, blocks):
-        return ['putPenUp']
+        if self.converter.compat:
+            self.converter.penUpDown = True
+            return ['call', 'pen up']
+        else:
+            return ['putPenup']
 
     def pen_setPenColorToColor(self, block, blocks):
         output = ['penColor:']
@@ -653,6 +691,11 @@ class BlockArgMapper:
     def sensing_mousey(self, block, blocks):
         return ['mouseY']
 
+    def sensing_setdragmode(self, block, blocks):
+        assert self.converter.compat
+        self.converter.dragMode = True
+        return ['call', 'set drag mode %s', self.converter.fieldVal('DRAG_MODE', block)]
+
     def sensing_loudness(self, block, blocks):
         return ['soundLevel']
 
@@ -666,10 +709,14 @@ class BlockArgMapper:
         return ['timerReset']
 
     def sensing_of(self, block, blocks):
-        output = ['getAttribute:of:']
-        output.append(self.converter.fieldVal('PROPERTY', block))
-        output.append(self.converter.inputVal('OBJECT', block, blocks))
-        return output
+        attr = self.converter.fieldVal('PROPERTY', block)
+        obj = self.converter.inputVal('OBJECT', block, blocks)
+        if obj == '_stage_':
+            if (type(attr) == list) or (attr not in BlockArgMapper.stageAttrs):
+                attr = self.varName(attr)
+        elif (type(attr) == list) or (attr not in BlockArgMapper.spriteAttrs):
+            attr = self.varName(attr)
+        return ['getAttribute:of:', attr, obj]
 
     def sensing_current(self, block, blocks):
         output = ['timeAndDate']
@@ -888,7 +935,7 @@ class BlockArgMapper:
         block = blocks[block['inputs']['custom_block'][1]]
         procData = block['mutation']
         output = ['procDef']
-        output.append(procData['proccode'])
+        output.append(self.varName(procData['proccode']))
         output.append(json.loads(procData['argumentnames']))
         output.append(json.loads(procData['argumentdefaults']))
         self.converter.blockID += (1 + len(output[-2]))
@@ -900,7 +947,7 @@ class BlockArgMapper:
 
     def procedures_call(self, block, blocks):
         output = ['call']
-        output.append(block['mutation']['proccode'])
+        output.append(self.varName(block['mutation']['proccode']))
         ids = json.loads(block['mutation']['argumentids'])
         for i in ids:
             output.append(self.converter.inputVal(i, block, blocks))
@@ -984,6 +1031,7 @@ class BlockArgMapper:
         return output
 
 class ProjectConverter:
+
     varModes = {
         'default': 1,
         'large': 2,
@@ -1003,6 +1051,25 @@ class ProjectConverter:
         'music': 12272323,
         'sensing': 2926050,
         'data': 15629590
+    }
+
+    # Used to change variable names in hacked reporters if in compatibility mode
+    sb2BlocksVarFields = {
+        'setVar:to:': 1,
+        'changeVar:by:': 1,
+        'showVariable:': 1,
+        'hideVariable:': 1,
+        'readVariable': 1,
+        'contentsOfList:': 1,
+        'append:toList:': 2,
+        'deleteLine:ofList:': 2,
+        'insert:at:ofList:': 3,
+        'setLine:ofList:to:': 2,
+        'getLine:ofList:': 2,
+        'lineCountOfList:': 1,
+        'list:contains:': 1,
+        'showList:': 1,
+        'hideList:': 1
     }
 
     @staticmethod
@@ -1029,6 +1096,19 @@ class ProjectConverter:
         self.blockComments = {}
         self.convertingMonitors = False
 
+    def varName(self, name):
+        if type(name) == str:
+            return ('_' if self.compat else '') + name
+        else:
+            if self.compat:
+                return ['concatenate:with:', '_', name]
+                self.blockID += 1
+            else:
+                return name
+
+    def compatVarName(self, name):
+        return ('Stage: ' if self.targetIsStage else '') + name
+
     def generateWarning(self, message):
         self.warnings += 1
         printWarning(message)
@@ -1039,6 +1119,17 @@ class ProjectConverter:
 
     def hackedReporterBlockID(self, reporter):
         self.blockID += 1
+        if self.compat: # Add underscore to variable names if in compatibility mode
+            block = reporter[0]
+            if block in ProjectConverter.sb2BlocksVarFields:
+                index = ProjectConverter.sb2BlocksVarFields[block]
+                reporter[index] = self.varName(reporter[index])
+            elif block == 'getAttribute:of:':
+                if reporter[2] == '_stage_':
+                    if reporter[1] not in BlockArgMapper.stageAttrs:
+                        reporter[1] = self.varName(reporter[1])
+                elif reporter[1] not in BlockArgMapper.spriteAttrs:
+                    reporter[1] = self.varName(reporter[1])
         for value in reporter:
             if type(value) == list:
                 self.hackedReporterBlockID(value)
@@ -1085,10 +1176,10 @@ class ProjectConverter:
             if type(out) == list:
                 if out[0] == 12:
                     self.blockID += 1
-                    return ['readVariable', out[1]]
+                    return ['readVariable', self.varName(out[1])]
                 elif out[0] == 13:
                     self.blockID += 1
-                    return ['contentsOfList:', out[1]]
+                    return ['contentsOfList:', self.varName(out[1])]
                 else:
                     try:
                         return out[1]
@@ -1127,11 +1218,13 @@ class ProjectConverter:
         if not value in block['fields']:
             return None
 
-        value = block['fields'][value][0]
-        if type(value) == list:
-            self.hackedReporterBlockID(value)
+        output = block['fields'][value][0]
+        if type(output) == list:
+            self.hackedReporterBlockID(output)
+        if value in ['VARIABLE', 'LIST']:
+            output = self.varName(output)
 
-        return value
+        return output
 
     def convertSubstack(self, key, blocks):
         self.setCommentBlockId(key)
@@ -1447,6 +1540,7 @@ class ProjectConverter:
         sprite = {}
 
         sprite['objName'] = target['name']
+        self.targetName = sprite['objName']
         scripts = []
         variables = []
         lists = []
@@ -1455,6 +1549,13 @@ class ProjectConverter:
         self.comments = []
 
         isStage = target['isStage']
+        self.targetIsStage = isStage
+
+        self.costumeName = False
+        self.dragMode = False
+        if not isStage:
+            self.dragMode = target['draggable']
+        self.penUpDown = False
 
         for s in target['sounds']:
             self.addSound(s)
@@ -1464,7 +1565,7 @@ class ProjectConverter:
 
         for key, v in target['variables'].items():
             variable = {
-                'name': v[0],
+                'name': self.varName(v[0]),
                 'value': ProjectConverter.specialNum(v[1]),
                 'isPersistent': len(v) >= 3 and v[2]
             }
@@ -1472,7 +1573,7 @@ class ProjectConverter:
 
         for key, l in target['lists'].items():
             ls = {
-                'listName': l[0],
+                'listName': self.varName(l[0]),
                 'contents': [ProjectConverter.specialNum(item) for item in l[1]],
                 'isPersistent': False
             }
@@ -1499,9 +1600,9 @@ class ProjectConverter:
                 script = [x, y]
 
                 if b[0] == 12:
-                    script.append([['readVariable', b[1]]])
+                    script.append([['readVariable', self.varName(b[1])]])
                 elif b[0] == 13:
-                    script.append([['contentsOfList:', b[1]]])
+                    script.append([['contentsOfList:', self.varName(b[1])]])
                 else:
                     script = None
 
@@ -1522,6 +1623,89 @@ class ProjectConverter:
 
                 scripts.append([x, y, self.convertSubstack(key, blocks)])
                 self.scriptCount += 1
+
+        # Add variables, lists, and custom blocks for compatibility mode
+
+        if self.compat:
+
+            if False:
+                lists.append({
+                    'listName': self.compatVarName('results'),
+                    'contents': [],
+                    'isPersistent': False,
+                    'visible': False
+                })
+
+            if self.costumeName:
+                costumeNames = []
+                for c in target['costumes']:
+                    costumeNames.append(c['name'])
+                lists.append({
+                    'listName': self.compatVarName('costume names'),
+                    'contents': costumeNames,
+                    'isPersistent': False,
+                    'visible': False
+                })
+
+            if self.penUpDown or self.dragMode:
+
+                pen = self.compatVarName('pen')
+                variables.append({
+                    'name': pen,
+                    'value': 'up',
+                    'isPersistent': False
+                })
+                drag = self.compatVarName('drag')
+                variables.append({
+                    'name': drag,
+                    'value': 'draggable' if (not isStage and target['draggable']) else 'not draggable',
+                    'isPersistent': False
+                })
+
+                scripts.append(
+                    [0,
+					    0,
+					    [["procDef", "pen down", [], [], True], ["putPenDown"], ["setVar:to:", pen, "down"]]]
+                )
+                scripts.append(
+                    [0,
+					    0,
+					    [["procDef", "pen up", [], [], True], ["putPenUp"], ["setVar:to:", pen, "up"]]]
+                )
+
+                scripts.append(
+                    [0,
+                        0,
+                        [["whenClicked"],
+                            ["doIf",
+                                ["=", ["readVariable", drag], "draggable"],
+                                [["call",
+                                        "drag %n %n",
+                                        ["-", ["xpos"], ["mouseX"]],
+                                        ["-", ["ypos"], ["mouseY"]]]]]]]
+                )
+
+                scripts.append(
+                    [0,
+                        0,
+                        [["procDef", "set drag mode %s", ["drag"], [""], True],
+                            ["setVar:to:", drag, ["getParam", "drag", "r"]]]]
+                )
+
+                scripts.append(
+                    [0,
+                        0,
+                        [["procDef", "drag %n %n", ["X", "Y"], [0, 0], False],
+                            ["doIf", ["=", ["readVariable", pen], "down"], [["putPenUp"]]],
+                            ["doUntil",
+                                ["not", ["mousePressed"]],
+                                [["gotoX:y:",
+                                        ["+", ["mouseX"], ["getParam", "X", "r"]],
+                                        ["+", ["mouseY"], ["getParam", "Y", "r"]]]]],
+                            ["doIf", ["=", ["readVariable", pen], "down"], [["putPenDown"]]]]]
+                )
+
+                self.scriptCount += 5
 
         sprite['scripts'] = scripts
         sprite['variables'] = variables
@@ -1551,7 +1735,7 @@ class ProjectConverter:
             sprite['scale'] = target['size'] / 100
             sprite['direction'] = target['direction']
             sprite['rotationStyle'] = ProjectConverter.rotationStyles[target['rotationStyle']]
-            sprite['isDraggable'] = target['draggable']
+            sprite['isDraggable'] = target['draggable'] and not self.compat
             sprite['indexInLibrary'] = index
             sprite['visible'] = target['visible']
             sprite['spriteInfo'] = {}
@@ -1593,7 +1777,7 @@ class ProjectConverter:
         if m['opcode'] == 'data_listcontents':
 
             monitor = {
-                'listName': m['params']['LIST'],
+                'listName': self.varName(m['params']['LIST']),
                 'contents': m['value'],
                 'isPersistent': False,
                 'x': m['x'],
@@ -1656,8 +1840,9 @@ class ProjectConverter:
             except:
                 self.generateWarning("Stage monitor '{}' will not be converted".format(m['opcode']))
 
-    def convertProject(self, sb3path, sb2path, replace=False):
+    def convertProject(self, sb3path, sb2path, replace=False, compatibility=False):
         
+        self.compat = compatibility
         self.warnings = 0
 
         if not sb3path[-3:] == 'sb3':
@@ -1769,7 +1954,12 @@ if __name__ == '__main__':
         sb3path = sys.argv[-2]
         sb2path = sys.argv[-1]
 
-    result = ProjectConverter().convertProject(sb3path, sb2path, replace=dialog)
+    args = []
+    if len(sys.argv) > 3:
+        for arg in sys.argv[1:-2]:
+            args.append(arg)
+
+    result = ProjectConverter().convertProject(sb3path, sb2path, replace=dialog, compatibility=('-c' in args))
     warnings = result[0]
     sb2path = result[1]
 
