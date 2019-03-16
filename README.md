@@ -27,7 +27,7 @@ Arguments
 --------------
 Arguments should be separated by a space.
 List of arguments:
-- `-c`: This enables compatibility mode. Workarounds for the following block will be inserted into sprites:
+- `-c`: This enables compatibility mode. Workarounds for the following blocks will be inserted into sprites:
   - costume [number v]
   - set drag mode [ v]
 
