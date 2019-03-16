@@ -20,10 +20,18 @@ Usage
 Usage (command line)
 --------------
 1. Open the terminal or command prompt and navigate to the directory of the sb3tosb2.py file.
-2. Enter the following command: `python sb3tosb2.py [sb3 location] [sb2 location]`
+2. Enter the following command: `python sb3tosb2.py [args] [sb3 location] [sb2 location]` (leave `[args]` empty for default options)
 3. If an error is given, make sure you entered a valid sb3 file.
 
+Arguments
+--------------
+Arguments should be separated by a space.
+List of arguments:
+- `-c`: This enables compatibility mode. Workarounds for the following block will be inserted into sprites:
+  - costume [number v]
+  - set drag mode [ v]
+
 Known Issues
--------------
+--------------
 - MP3 audio files cannot be converted
 - 32-bit float WAV files may not be converted correctly
