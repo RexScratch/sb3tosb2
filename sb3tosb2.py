@@ -1555,6 +1555,7 @@ class ProjectConverter:
             sprite['indexInLibrary'] = index
             sprite['visible'] = target['visible']
             sprite['spriteInfo'] = {}
+            sprite['layerOrder'] = target['layerOrder']
 
         print("Finished converting '{}' ({}/{})".format(sprite['objName'], index + 1, self.totalTargets))
 
@@ -1729,6 +1730,12 @@ class ProjectConverter:
             self.addMonitor(m)
 
         self.updateListData(output, sprites, self.lists)
+
+        # Sort sprites into their layers
+
+        sprites.sort(key = lambda sprite: sprite['layerOrder'])
+        for sprite in sprites:
+            del sprite['layerOrder']
 
         sprites.extend(self.monitors)
         self.convertingMonitors = False
