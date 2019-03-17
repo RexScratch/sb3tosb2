@@ -1,4 +1,4 @@
-import sys, json, zipfile, audioop, hashlib
+import sys, json, zipfile, audioop, hashlib, wave, io
 
 sys.setrecursionlimit(4100)
 
@@ -432,6 +432,7 @@ class BlockArgMapper:
     def pen_setPenColorParamTo(self, block, blocks):
         param = self.converter.inputVal('COLOR_PARAM', block, blocks)
         value = self.converter.inputVal('VALUE', block, blocks)
+        self.converter.compatWarning = True
         if param == 'color':
             if type(value) == str:
                 try:
@@ -459,12 +460,15 @@ class BlockArgMapper:
             output.append(value)
             return output
         else:
+            if type(param) == list:
+                param = '[blocks...]'
             self.converter.generateWarning("Incompatible block 'set pen [{} v] to ({})'".format(param, value))
             return ['pen_setPenColorParamTo', value, param]
 
     def pen_changePenColorParamBy(self, block, blocks):
         param = self.converter.inputVal('COLOR_PARAM', block, blocks)
         value = self.converter.inputVal('VALUE', block, blocks)
+        self.converter.compatWarning = True
         if param == 'color':
             if type(value) == str:
                 try:
@@ -492,6 +496,8 @@ class BlockArgMapper:
             output.append(value)
             return output
         else:
+            if type(param) == list:
+                param = '[blocks...]'
             self.converter.generateWarning("Incompatible block 'change pen [{} v] by ({})'".format(param, value))
             return ['pen_changeColorParamBy', value, param]
 
@@ -1321,28 +1327,53 @@ class ProjectConverter:
             if s['dataFormat'] == 'wav':
                 f = self.zfsb3.open(s['md5ext'], 'r')
                 wav = bytes(f.read())
-
-                width = int.from_bytes(wav[34:36], byteorder='little') // 8
-                channels = int.from_bytes(wav[22:24], byteorder='little')
-                srate = int.from_bytes(wav[24:28], byteorder='little')
+                try:
+                    wavData = wave.open(io.BytesIO(wav), 'rb')
+                    sampData = wavData.readframes(wavData.getnframes())
+                    width = wavData.getsampwidth()
+                    channels = wavData.getnchannels()
+                    srate = wavData.getframerate()
+                    wavData.close()
+                except:
+                    # Original solution which works in most cases
+                    sampData = wav[44:]
+                    width = int.from_bytes(wav[34:36], byteorder='little') // 8
+                    channels = int.from_bytes(wav[22:24], byteorder='little')
+                    srate = int.from_bytes(wav[24:28], byteorder='little')
 
                 modified = False
-                error = width * channels == 0 or (len(wav) - 44) % (width * channels) != 0
+                error = width * channels == 0 or (len(sampData) - 44) % (width * channels) != 0
                 
                 if not error:
-                    if channels == 2: # Convert to mono
-                        wav = wav[0:44] + audioop.tomono(wav[44:], width, 1, 1)
-                        modified = True
-                    
-                    if srate > 22050 and not error: # Downsample
-                        wav = wav[0:44] + audioop.ratecv(wav[44:], width, 1, srate, 22050, None)[0]
-                        srate = 22050
-                        modified = True
+                    try:
+                        if channels == 2: # Convert to mono
+                            sampData = audioop.tomono(sampData, width, 1, 1)
+                            modified = True
+                        
+                        if srate > 22050 and srate != 44100 and not error: # Downsample
+                            sampData = audioop.ratecv(sampData, width, 1, srate, 22050, None)[0]
+                            srate = 22050
+                            modified = True
+                    except:
+                        error = True
 
                 if modified:
-                    size = len(wav) - 44
-                    wav = wav[0:22] + (1).to_bytes(2, byteorder='little') + srate.to_bytes(4, byteorder='little') + wav[28:40] + size.to_bytes(4, byteorder='little') + wav[44:]
+                    size = len(sampData)
                     scount = size // width
+                    try:
+                        wavFile = io.BytesIO()
+                        wavData = wave.open(wavFile, 'wb')
+                        wavData.setsampwidth(width)
+                        wavData.setnchannels(1)
+                        wavData.setframerate(srate)
+                        wavData.setnframes(scount)
+                        wavData.writeframes(sampData)
+                        wavData.close()
+                        wavFile.seek(0)
+                        wav = wavFile.read()
+                    except:
+                        # Original solution which works in most cases
+                        wav = wav[0:22] + (1).to_bytes(2, byteorder='little') + srate.to_bytes(4, byteorder='little') + wav[28:40] + size.to_bytes(4, byteorder='little') + wav[44:]
                     self.soundAssets[s['assetId']].append(False)
                     md5 = hashlib.md5(wav).hexdigest()
                 elif error and not srate <= 22050 and not channels == 1:
@@ -1753,7 +1784,7 @@ class ProjectConverter:
                 scripts.append(
                     [0,
                         0,
-                        [["procDef", "set drag mode %s", ["drag"], [""], True],
+                        [["procDef", "set drag mode %s", ["drag"], ["draggable"], True],
                             ["setVar:to:", drag, ["getParam", "drag", "r"]]]]
                 )
 
@@ -1814,7 +1845,7 @@ class ProjectConverter:
                 scripts.append(
                     [10,
                         10,
-                        [["procDef", "%s contains %s ?", ["STRING1", "STRING2"], ["", ""], True],
+                        [["procDef", "%s contains %s ?", ["STRING1", "STRING2"], ["apple", "a"], True],
                             ["doIfElse",
                                 ["=", ["stringLength:", ["getParam", "STRING2", "r"]], 0],
                                 [["append:toList:", ["=", 0, 0], results]],
@@ -1858,7 +1889,7 @@ class ProjectConverter:
                 scripts.append(
                     [0,
                         0,
-                        [["procDef", "item # of %s in %m.list", ["ITEM", "LIST"], ["", ""], True],
+                        [["procDef", "item # of %s in %m.list", ["ITEM", "LIST"], ["thing", ""], True],
                             ["setVar:to:", returnVar, 0],
                             ["doIf",
                                 ["list:contains:", ["getParam", "LIST", "r"], ["getParam", "ITEM", "r"]],
