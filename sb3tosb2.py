@@ -387,7 +387,7 @@ class BlockArgMapper:
             self.converter.penUpDown = True
             return ['call', 'pen up']
         else:
-            return ['putPenup']
+            return ['putPenUp']
 
     def pen_setPenColorToColor(self, block, blocks):
         output = ['penColor:']
@@ -814,6 +814,15 @@ class BlockArgMapper:
         output.append(self.converter.inputVal('STRING', block, blocks))
         return output
 
+    def operator_contains(self, block, blocks):
+        assert self.converter.compat
+        self.converter.strContains = True
+        stackReporter = ['call', '%s contains %s ?']
+        stackReporter.append(self.converter.inputVal('STRING1', block, blocks))
+        stackReporter.append(self.converter.inputVal('STRING2', block, blocks))
+        self.converter.compatStackReporters[-1].append(stackReporter)
+        return ['getLine:ofList:', len(self.converter.compatStackReporters[-1]), self.converter.compatVarName('results')]
+
     def operator_mod(self, block, blocks):
         output = ['%']
         output.append(self.converter.inputVal('NUM1', block, blocks))
@@ -901,6 +910,15 @@ class BlockArgMapper:
         output.append(self.converter.inputVal('INDEX', block, blocks))
         output.append(self.converter.fieldVal('LIST', block))
         return output
+
+    def data_itemnumoflist(self, block, blocks):
+        assert self.converter.compat
+        self.converter.listSearch = True
+        stackReporter = ['call', 'item # of %s in %m.list']
+        stackReporter.append(self.converter.inputVal('ITEM', block, blocks))
+        stackReporter.append(self.converter.fieldVal('LIST', block))
+        self.converter.compatStackReporters[-1].append(stackReporter)
+        return ['getLine:ofList:', len(self.converter.compatStackReporters[-1]), self.converter.compatVarName('results')]
 
     def data_lengthoflist(self, block, blocks):
         output = ['lineCountOfList:']
@@ -1087,6 +1105,7 @@ class ProjectConverter:
         self.blockID = 0
         self.comments = []
         self.blockComments = {}
+        self.compatStackReporters = []
         self.convertingMonitors = False
 
     def varName(self, name):
@@ -1215,15 +1234,28 @@ class ProjectConverter:
         return output
 
     def convertSubstack(self, key, blocks):
+        self.compatStackReporters.append([])
         block = blocks[key]
         script = []
         end = False
         while not end:
-            script.append(self.convertBlock(block, blocks))
+            self.compatStackReporters[-1] = []
+            output = self.convertBlock(block, blocks)
+            sReporters = self.compatStackReporters[-1]
+            if len(sReporters) > 0:
+                script.append(['deleteLine:ofList:', 'all', self.compatVarName('results')])
+                script.extend(self.compatStackReporters[-1])
+                if output[0] == 'doUntil':
+                    if type(output[2]) != list:
+                        output[2] = []
+                    output[2].append(['deleteLine:ofList:', 'all', self.compatVarName('results')])
+                    output[2].extend(self.compatStackReporters[-1])
+            script.append(output)
             if block['next'] == None:
                 end = True
             else:
                 block = blocks[block['next']]
+        del self.compatStackReporters[-1]
         return script
 
     def substackVal(self, stack, block, blocks):
@@ -1569,6 +1601,8 @@ class ProjectConverter:
         if not isStage:
             self.dragMode = target['draggable']
         self.penUpDown = False
+        self.strContains = False
+        self.listSearch = False
 
         for s in target['sounds']:
             self.addSound(s)
@@ -1635,6 +1669,8 @@ class ProjectConverter:
                 if y % 1 == 0:
                     y = int(y)
 
+                self.compatStackReporters = []
+
                 scripts.append([x, y, self.convertSubstack(key, blocks)])
                 self.scriptCount += 1
 
@@ -1645,14 +1681,6 @@ class ProjectConverter:
             self.getCommentBlockIDs(script[2])
 
         if self.compat:
-
-            if False:
-                lists.append({
-                    'listName': self.compatVarName('results'),
-                    'contents': [],
-                    'isPersistent': False,
-                    'visible': False
-                })
 
             if self.costumeName:
                 costumeNames = []
@@ -1673,12 +1701,6 @@ class ProjectConverter:
                     'value': 'up',
                     'isPersistent': False
                 })
-                drag = self.compatVarName('drag')
-                variables.append({
-                    'name': drag,
-                    'value': 'draggable' if (not isStage and target['draggable']) else 'not draggable',
-                    'isPersistent': False
-                })
 
                 scripts.append(
                     [0,
@@ -1690,6 +1712,17 @@ class ProjectConverter:
 					    0,
 					    [["procDef", "pen up", [], [], True], ["putPenUp"], ["setVar:to:", pen, "up"]]]
                 )
+
+                self.scriptCount += 2
+
+            if self.dragMode:
+
+                drag = self.compatVarName('drag')
+                variables.append({
+                    'name': drag,
+                    'value': 'draggable' if (not isStage and target['draggable']) else 'not draggable',
+                    'isPersistent': False
+                })
 
                 scripts.append(
                     [0,
@@ -1714,6 +1747,7 @@ class ProjectConverter:
                     [0,
                         0,
                         [["procDef", "drag %n %n", ["X", "Y"], [0, 0], False],
+                            ['comeToFront'],
                             ["doIf", ["=", ["readVariable", pen], "down"], [["putPenUp"]]],
                             ["doUntil",
                                 ["not", ["mousePressed"]],
@@ -1723,7 +1757,110 @@ class ProjectConverter:
                             ["doIf", ["=", ["readVariable", pen], "down"], [["putPenDown"]]]]]
                 )
 
-                self.scriptCount += 5
+                self.scriptCount += 3
+
+            if self.strContains or self.listSearch:
+                returnVar = self.compatVarName('return')
+                variables.append({
+                    'name': returnVar,
+                    'value': 0,
+                    'isPersistent': False
+                })
+                results = self.compatVarName('results')
+                lists.append({
+                    'listName': results,
+                    'contents': [],
+                    'isPersistent': False,
+                    'x': 0,
+                    'y': 0,
+                    'width': 100,
+                    'height': 200,
+                    'visible': False
+                })
+
+            if self.strContains:
+                i = self.compatVarName('i')
+                variables.append({
+                    'name': i,
+                    'value': 0,
+                    'isPersistent': False
+                })
+                j = self.compatVarName('j')
+                variables.append({
+                    'name': j,
+                    'value': 0,
+                    'isPersistent': False
+                })
+                k = self.compatVarName('k')
+                variables.append({
+                    'name': k,
+                    'value': 0,
+                    'isPersistent': False
+                })
+                scripts.append(
+                    [10,
+                        10,
+                        [["procDef", "%s contains %s ?", ["STRING1", "STRING2"], ["", ""], True],
+                            ["doIfElse",
+                                ["=", ["stringLength:", ["getParam", "STRING2", "r"]], 0],
+                                [["append:toList:", ["=", 0, 0], results]],
+                                [["doIfElse",
+                                        ["=", ["stringLength:", ["getParam", "STRING2", "r"]], 1],
+                                        [["setVar:to:", i, 1],
+                                            ["doRepeat",
+                                                ["stringLength:", ["getParam", "STRING1", "r"]],
+                                                [["doIf",
+                                                        ["=",
+                                                            ["letter:of:", ["readVariable", i], ["getParam", "STRING1", "r"]],
+                                                            ["getParam", "STRING2", "r"]],
+                                                        [["append:toList:", ["=", 0, 0], results], ["stopScripts", "this script"]]],
+                                                    ["changeVar:by:", i, 1]]],
+                                            ["append:toList:", ["=", 1, 0], results]],
+                                        [["setVar:to:", k, ["-", ["stringLength:", ["getParam", "STRING2", "r"]], 1]],
+                                            ["setVar:to:", i, 1],
+                                            ["doRepeat",
+                                                ["+",
+                                                    ["-", ["stringLength:", ["getParam", "STRING1", "r"]], ["stringLength:", ["getParam", "STRING2", "r"]]],
+                                                    1],
+                                                [["setVar:to:", j, 0],
+                                                    ["doIf",
+                                                        ["=", ["readVariable", returnVar], "true"],
+                                                        [["append:toList:", ["=", 0, 0], results], ["stopScripts", "this script"]]],
+                                                    ["setVar:to:", returnVar, "true"],
+                                                    ["doUntil",
+                                                        [">", ["readVariable", j], ["readVariable", k]],
+                                                        [["doIfElse",
+                                                                ["=",
+                                                                    ["letter:of:", ["+", ["readVariable", i], ["readVariable", j]], ["getParam", "STRING1", "r"]],
+                                                                    ["letter:of:", ["+", ["readVariable", j], 1], ["getParam", "STRING2", "r"]]],
+                                                                [["changeVar:by:", j, 1]],
+                                                                [["setVar:to:", returnVar, "false"], ["setVar:to:", j, ["+", ["readVariable", k], 1]]]]]],
+                                                    ["changeVar:by:", i, 1]]],
+                                            ["append:toList:", ["=", 1, 0], results]]]]]]]
+                )
+                self.scriptCount += 1
+
+            if self.listSearch:
+                scripts.append(
+                    [0,
+                        0,
+                        [["procDef", "item # of %s in %m.list", ["ITEM", "LIST"], ["", ""], True],
+                            ["setVar:to:", returnVar, 0],
+                            ["doIf",
+                                ["list:contains:", ["getParam", "LIST", "r"], ["getParam", "ITEM", "r"]],
+                                [["setVar:to:", returnVar, 0],
+                                    ["doRepeat",
+                                        ["lineCountOfList:", ["getParam", "LIST", "r"]],
+                                        [["changeVar:by:", returnVar, 1],
+                                            ["doIf",
+                                                ["=",
+                                                    ["getLine:ofList:", ["readVariable", returnVar], ["getParam", "LIST", "r"]],
+                                                    ["getParam", "ITEM", "r"]],
+                                                [["append:toList:", ["*", 1, ["readVariable", returnVar]], results], ["stopScripts", "this script"]]]]],
+                                    ["append:toList:", 0, results]]]]]
+                )
+                self.scriptCount += 1
+
 
         sprite['scripts'] = scripts
         sprite['variables'] = variables

@@ -30,6 +30,8 @@ List of arguments:
 - `-c`: This enables compatibility mode. Workarounds for the following blocks will be inserted into sprites:
   - costume [number v]
   - set drag mode [ v]
+  - <[] contains []?> (may experience performance loss)
+  - (item # of [] in [ v]) (may experience performance loss)
 
 Known Issues
 --------------
