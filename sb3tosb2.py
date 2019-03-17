@@ -1159,12 +1159,10 @@ class ProjectConverter:
                 output = [opcode]
                 for i in block['inputs']:
                     value = self.inputVal(i, block, blocks)
-                    if type(value) != list:
-                        output.append(value)
+                    output.append(value)
                 for f in block['fields']:
                     value = self.fieldVal(f, block)
-                    if type(value) != list:
-                        output.append(value)
+                    output.append(value)
                 output.append(tuple([block['UID']]))
                 return output
 
@@ -1911,12 +1909,12 @@ class ProjectConverter:
 
     # Update list data with monitor info
 
-    def updateListData(self, output, sprites, lists):
+    def updateListData(self, output, sprites, stageLists, lists):
 
         for l in output['lists']:
 
-            if l['listName'] in lists['Stage']:
-                ls = lists['Stage'][l['listName']]
+            if l['listName'] in stageLists:
+                ls = stageLists[l['listName']]
                 self.updateList(l, ls)
 
         for s in sprites:
@@ -1939,24 +1937,27 @@ class ProjectConverter:
                 'isPersistent': False,
                 'x': m['x'],
                 'y': m['y'],
-                'width': m['width'],
-                'height': m['height'],
+                'width': 100 if m['width'] == 0 else m['width'],
+                'height': 200 if m['height'] == 0 else m['height'],
                 'visible': m['visible']
             }
 
             self.monitors.append(monitor)
 
-            spriteName = 'Stage' if m['spriteName'] == None else m['spriteName']
-            if not spriteName in self.lists:
-                self.lists[spriteName] = {}
-
-            self.lists[spriteName][monitor['listName']] = {
+            listData = {
                 'x': m['x'],
                 'y': m['y'],
-                'width': m['width'],
-                'height': m['height'],
+                'width': monitor['width'],
+                'height': monitor['height'],
                 'visible': m['visible']
             }
+
+            if m['spriteName'] == None:
+                self.stageLists[monitor['listName']] = listData
+            else:
+                if m['spriteName'] not in self.lists:
+                    self.lists[m['spriteName']] = {}
+                    self.lists[m['spriteName']][monitor['listName']] = listData
 
         else:
 
@@ -2064,6 +2065,7 @@ class ProjectConverter:
         self.monitors = []
 
         self.lists = {}
+        self.stageLists = {}
 
         # Convert monitors
 
@@ -2071,7 +2073,7 @@ class ProjectConverter:
         for m in self.jsonData['monitors']:
             self.addMonitor(m)
 
-        self.updateListData(output, sprites, self.lists)
+        self.updateListData(output, sprites, self.stageLists, self.lists)
 
         # Sort sprites into their layers
 
