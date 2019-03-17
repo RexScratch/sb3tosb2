@@ -44,7 +44,6 @@ class BlockArgMapper:
             return ('_' if self.converter.compat else '') + name
         else:
             if self.converter.compat:
-                self.converter.blockID += 1
                 return ['concatenate:with:', '_', name]
             else:
                 return name
@@ -258,7 +257,6 @@ class BlockArgMapper:
             if type(layers) == float or type(layers) == int:
                 layers *= -1
             else:
-                self.converter.blockID += 1
                 layers = ['*', -1, layers]
         return ['goBackByLayers:', layers]
 
@@ -438,7 +436,6 @@ class BlockArgMapper:
             if type(value) == float or type(value) == int:
                 value *= 2
             else:
-                self.converter.blockID += 1
                 value = ['*', 2, value]
             output = ['setPenHueTo:']
             output.append(value)
@@ -452,7 +449,6 @@ class BlockArgMapper:
             if type(value) == float or type(value) == int:
                 value /= 2
             else:
-                self.converter.blockID += 1
                 value = ['/', value, 2]
             output = ['setPenShadeTo:']
             output.append(value)
@@ -473,7 +469,6 @@ class BlockArgMapper:
             if type(value) == float or type(value) == int:
                 value *= 2
             else:
-                self.converter.blockID += 1
                 value = ['*', 2, value]
             output = ['changePenHueBy:']
             output.append(value)
@@ -487,7 +482,6 @@ class BlockArgMapper:
             if type(value) == float or type(value) == int:
                 value /= 2
             else:
-                self.converter.blockID += 1
                 value = ['/', value, 2]
             output = ['changePenShadeBy:']
             output.append(value)
@@ -938,7 +932,6 @@ class BlockArgMapper:
         output.append(self.varName(procData['proccode']))
         output.append(json.loads(procData['argumentnames']))
         output.append(json.loads(procData['argumentdefaults']))
-        self.converter.blockID += (1 + len(output[-2]))
         if len(output[-1]) != len(output[-2]):
             output[-1] = len(output[-2]) * ['']
         warp = procData['warp']
@@ -1102,7 +1095,6 @@ class ProjectConverter:
         else:
             if self.compat:
                 return ['concatenate:with:', '_', name]
-                self.blockID += 1
             else:
                 return name
 
@@ -1113,12 +1105,11 @@ class ProjectConverter:
         self.warnings += 1
         printWarning(message)
 
-    def setCommentBlockId(self, id):
+    def setCommentBlockID(self, id):
         if id in self.blockComments:
             self.comments[self.blockComments[id]][5] = self.blockID
 
-    def hackedReporterBlockID(self, reporter):
-        self.blockID += 1
+    def convertHackedReporter(self, reporter):
         if self.compat: # Add underscore to variable names if in compatibility mode
             block = reporter[0]
             if block in ProjectConverter.sb2BlocksVarFields:
@@ -1130,18 +1121,18 @@ class ProjectConverter:
                         reporter[1] = self.varName(reporter[1])
                 elif reporter[1] not in BlockArgMapper.spriteAttrs:
                     reporter[1] = self.varName(reporter[1])
-        for value in reporter:
-            if type(value) == list:
-                self.hackedReporterBlockID(value)
+            for value in reporter:
+                if type(value) == list:
+                    self.convertHackedReporter(value)
 
     def convertBlock(self, block, blocks):
         opcode = block['opcode']
-        self.blockID += 1
         try:
-            return self.argmapper.mapArgs(opcode, block, blocks)
+            output = self.argmapper.mapArgs(opcode, block, blocks)
+            output.append(tuple([block['UID']]))
+            return output
         except:
             if len(block['inputs']) == 0 and len(block['fields']) == 1 and block['shadow'] and not block['topLevel']:  # Menu opcodes and shadows
-                self.blockID -= 1
                 return self.fieldVal(list(block['fields'].items())[0][0], block)
             else:
                 self.generateWarning("Incompatible opcode '{}'".format(opcode))
@@ -1155,6 +1146,7 @@ class ProjectConverter:
                     value = self.fieldVal(f, block)
                     if type(value) != list:
                         output.append(value)
+                output.append(tuple([block['UID']]))
                 return output
 
     def inputVal(self, value, block, blocks):
@@ -1167,7 +1159,6 @@ class ProjectConverter:
             return None
         if value[0] == 1:
             if type(value[1]) == str:
-                self.setCommentBlockId(value[1])
                 return self.convertBlock(blocks[value[1]], blocks)
             else:
                 output = value[1][1]
@@ -1175,10 +1166,8 @@ class ProjectConverter:
             out = value[1]
             if type(out) == list:
                 if out[0] == 12:
-                    self.blockID += 1
                     return ['readVariable', self.varName(out[1])]
                 elif out[0] == 13:
-                    self.blockID += 1
                     return ['contentsOfList:', self.varName(out[1])]
                 else:
                     try:
@@ -1187,7 +1176,6 @@ class ProjectConverter:
                         return
             else:
                 try:
-                    self.setCommentBlockId(out)
                     return self.convertBlock(blocks[out], blocks)
                 except:
                     return False
@@ -1220,14 +1208,13 @@ class ProjectConverter:
 
         output = block['fields'][value][0]
         if type(output) == list:
-            self.hackedReporterBlockID(output)
+            self.convertHackedReporter(output)
         if value in ['VARIABLE', 'LIST']:
             output = self.varName(output)
 
         return output
 
     def convertSubstack(self, key, blocks):
-        self.setCommentBlockId(key)
         block = blocks[key]
         script = []
         end = False
@@ -1236,7 +1223,6 @@ class ProjectConverter:
             if block['next'] == None:
                 end = True
             else:
-                self.setCommentBlockId(block['next'])
                 block = blocks[block['next']]
         return script
 
@@ -1547,6 +1533,21 @@ class ProjectConverter:
 
         self.costumes.append(costume)
 
+    def getCommentBlockIDs(self, script):
+        if len(script) > 0:
+            UID = script[-1]
+            if type(UID) == tuple:
+                self.setCommentBlockID(UID[0])
+                del script[-1]
+            if type(script[0]) == str:
+                self.blockID += 1
+            if script[0] == 'procDef':
+                self.blockID += 1 + len(script[2])
+            else:
+                for block in script:
+                    if type(block) == list:
+                        self.getCommentBlockIDs(block)
+
     def convertTarget(self, target, index):
 
         sprite = {}
@@ -1597,7 +1598,10 @@ class ProjectConverter:
             self.addComment(c)
 
         blocks = target['blocks']
-        self.blockID = 0
+
+        for key, b in blocks.items():
+            if type(b) == dict:
+                b['UID'] = key
 
         for key, b in blocks.items():
 
@@ -1619,8 +1623,6 @@ class ProjectConverter:
                     script = None
 
                 if script != None:
-                    self.setCommentBlockId(key)
-                    self.blockID += 1
                     scripts.append(script)
                     self.scriptCount += 1
 
@@ -1637,6 +1639,10 @@ class ProjectConverter:
                 self.scriptCount += 1
 
         # Add variables, lists, and custom blocks for compatibility mode
+
+        self.blockID = 0
+        for script in scripts:
+            self.getCommentBlockIDs(script[2])
 
         if self.compat:
 
