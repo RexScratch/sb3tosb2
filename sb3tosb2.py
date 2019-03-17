@@ -1560,8 +1560,10 @@ class ProjectConverter:
             'rotationCenterY': c['rotationCenterY']
         }
 
-        if 'bitmapResolution' in c:
+        if ('bitmapResolution' in c) and (fileData[1][-3:] != 'svg'):
             costume['bitmapResolution'] = c['bitmapResolution']
+        else:
+            costume['bitmapResolution'] = 1
 
         self.costumes.append(costume)
 
