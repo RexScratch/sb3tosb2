@@ -13,6 +13,10 @@ def printError(message):
     input('Press enter to exit... ')
     exit()
 
+def rightPad(s, l, c):
+    assert type(s) == str and type(c) == str
+    return s + (l * c)
+
 class BlockArgMapper:
     
     stageAttrs = {
@@ -1590,7 +1594,7 @@ class ProjectConverter:
                     if type(block) == list:
                         self.getCommentBlockIDs(block)
 
-    def convertTarget(self, target, index):
+    def convertTarget(self, target, index, maxLen):
 
         sprite = {}
 
@@ -1906,7 +1910,7 @@ class ProjectConverter:
             sprite['spriteInfo'] = {}
             sprite['layerOrder'] = target['layerOrder']
 
-        print("Finished converting '{}' ({}/{})".format(sprite['objName'], index + 1, self.totalTargets))
+        print("Converted {} ({}/{})".format(rightPad('\'' + sprite['objName'] + '\'', maxLen - len(sprite['objName']), ' '), index + 1, self.totalTargets))
 
         return (isStage, sprite)
 
@@ -2029,6 +2033,7 @@ class ProjectConverter:
         except:
             printError("File '{}' does not exist".format(sb3path))
 
+        print('')
         try:
             self.zfsb2 = zipfile.ZipFile(sb2path, 'x')
         except:
@@ -2036,7 +2041,6 @@ class ProjectConverter:
             if replace:
                 replaceFile = True
             else:
-                print('')
                 print("File '{}' already exists".format(sb2path))
                 replaceFile = input("Overwrite '{}'? (Y/N): ".format(sb2path))
                 print('')
@@ -2065,8 +2069,13 @@ class ProjectConverter:
 
         # Convert Stage and sprites
 
+        maxLen = 0
         for target in self.jsonData['targets']:
-            sprite = self.convertTarget(target, targetsDone)
+            name = 'Stage' if target['isStage'] else target['name']
+            maxLen = max(maxLen, len(name))
+
+        for target in self.jsonData['targets']:
+            sprite = self.convertTarget(target, targetsDone, maxLen)
             if sprite[0]:
                 output = sprite[1]
             else:
@@ -2153,7 +2162,6 @@ if __name__ == '__main__':
         retry = input("Would you like to re-convert '{}' with compatibility mode enabled? (Y/N): ".format(sb3path))
         if retry[0] == 'Y' or retry[0] == 'y':
             
-            print('')
             result = ProjectConverter().convertProject(sb3path, sb2path, replace=True, compatibility=True)
             warnings = result[0]
             sb2path = result[2]
