@@ -37,3 +37,4 @@ Known Issues
 - 32-bit float WAV files may not be converted correctly
 - Compatibility mode changes variable monitor labels
 - Compatibility mode allows ([ v] of [ v]) to access only variables (not attributes like x position, backdrop #, etc.)
+- Dragging in projects converted with compatibility mode does not have the same pen behavior as in 3.0
