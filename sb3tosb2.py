@@ -271,6 +271,7 @@ class BlockArgMapper:
                     return ['getLine:ofList:', ['costumeIndex'], self.converter.compatVarName('costume names')]
                 else:
                     self.converter.generateWarning("Incompatible block 'costume [name v]'")
+                    self.converter.compatWarning = True
                     return ['costumeName']
 
     def looks_backdropnumbername(self, block, blocks):
@@ -1083,6 +1084,12 @@ class ProjectConverter:
         'hideList:': 1
     }
 
+    compatWarnings = {
+        'sensing_setdragmode',
+        'operator_contains',
+        'data_itemnumoflist'
+    }
+
     @staticmethod
     def hexToDec(hexNum):
         try:
@@ -1106,6 +1113,7 @@ class ProjectConverter:
         self.comments = []
         self.blockComments = {}
         self.compatStackReporters = []
+        self.compatWarning = False
         self.convertingMonitors = False
 
     def varName(self, name):
@@ -1155,6 +1163,8 @@ class ProjectConverter:
                 return self.fieldVal(list(block['fields'].items())[0][0], block)
             else:
                 self.generateWarning("Incompatible opcode '{}'".format(opcode))
+                if opcode in ProjectConverter.compatWarnings:
+                    self.compatWarning = True
 
                 output = [opcode]
                 for i in block['inputs']:
@@ -1856,7 +1866,7 @@ class ProjectConverter:
                                                 ["=",
                                                     ["getLine:ofList:", ["readVariable", returnVar], ["getParam", "LIST", "r"]],
                                                     ["getParam", "ITEM", "r"]],
-                                                [["append:toList:", ["*", 1, ["readVariable", returnVar]], results], ["stopScripts", "this script"]]]]],
+                                                [["append:toList:", ["readVariable", returnVar], results], ["stopScripts", "this script"]]]]],
                                     ["append:toList:", 0, results]]]]]
                 )
                 self.scriptCount += 1
@@ -1999,6 +2009,8 @@ class ProjectConverter:
                 self.generateWarning("Stage monitor '{}' will not be converted".format(m['opcode']))
 
     def convertProject(self, sb3path, sb2path, replace=False, compatibility=False):
+
+        self.compatWarning = False
         
         self.compat = compatibility
         self.warnings = 0
@@ -2024,9 +2036,11 @@ class ProjectConverter:
             if replace:
                 replaceFile = True
             else:
+                print('')
                 print("File '{}' already exists".format(sb2path))
                 replaceFile = input("Overwrite '{}'? (Y/N): ".format(sb2path))
-                replaceFile = replaceFile == 'Y' or replaceFile == 'y'
+                print('')
+                replaceFile = replaceFile[0] == 'Y' or replaceFile[0] == 'y'
             if replaceFile:
                 import os
                 os.remove(sb2path)
@@ -2095,7 +2109,10 @@ class ProjectConverter:
 
         self.zfsb2.writestr('project.json', output)
 
-        return (self.warnings, sb2path)
+        self.zfsb3.close()
+        self.zfsb2.close()
+
+        return (self.warnings, self.compatWarning and not self.compat, sb2path)
 
 if __name__ == '__main__':
 
@@ -2120,11 +2137,31 @@ if __name__ == '__main__':
 
     result = ProjectConverter().convertProject(sb3path, sb2path, replace=dialog, compatibility=('-c' in args))
     warnings = result[0]
-    sb2path = result[1]
+    sb2path = result[2]
 
+    print('')
     if warnings == 0:
-        print('Saved to {} with no warnings'.format(sb2path))
+        print("Saved to '{}' with no warnings".format(sb2path))
     elif warnings == 1:
-        print('Saved to {} with {} warning'.format(sb2path, warnings))
+        print("Saved to '{}' with {} warning".format(sb2path, warnings))
     else:
-        print('Saved to {} with {} warnings'.format(sb2path, warnings))
+        print("Saved to '{}' with {} warnings".format(sb2path, warnings))
+
+    if result[1]:
+        print('')
+        printWarning("The converted project may not work properly unless compatibility mode is enabled")
+        retry = input("Would you like to re-convert '{}' with compatibility mode enabled? (Y/N): ".format(sb3path))
+        if retry[0] == 'Y' or retry[0] == 'y':
+            
+            print('')
+            result = ProjectConverter().convertProject(sb3path, sb2path, replace=True, compatibility=True)
+            warnings = result[0]
+            sb2path = result[2]
+
+            print('')
+            if warnings == 0:
+                print("Saved to '{}' with no warnings".format(sb2path))
+            elif warnings == 1:
+                print("Saved to '{}' with {} warning".format(sb2path, warnings))
+            else:
+                print("Saved to '{}' with {} warnings".format(sb2path, warnings))
