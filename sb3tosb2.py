@@ -1971,7 +1971,7 @@ class ProjectConverter:
             else:
                 if m['spriteName'] not in self.lists:
                     self.lists[m['spriteName']] = {}
-                    self.lists[m['spriteName']][monitor['listName']] = listData
+                self.lists[m['spriteName']][monitor['listName']] = listData
 
         else:
 
