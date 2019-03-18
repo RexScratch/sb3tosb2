@@ -38,6 +38,7 @@ List of options:
   - timer blocks
 - `-j`: Automatically enables compatibility mode and adds an unlimited join workaround (may result in significant performance loss)
 - `-l`: Automatically enables compatibility mode and adds custom blocks to automatically limit list length to 200,000 (may result in performance loss)
+- `-p`: Tries to insert blocks to fill the screen when the pen size is set to a value greater than 255
 
 Known Issues
 --------------

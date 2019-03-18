@@ -1793,11 +1793,69 @@ class ProjectConverter:
                     scripts.append([x, y, self.convertSubstack(key, blocks)])
                     self.scriptCount += 1
 
-        # Add variables, lists, and custom blocks for compatibility mode
-
         self.blockID = 0
         for script in scripts:
             self.getCommentBlockIDs(script[2])
+
+        # Find where the pen size is greater than 255 and add a screen fill
+
+        if self.penFill:
+            if self.compat and self.penUpDown:
+                penDown = ['call', 'pen down']
+                penUp = ['call', 'pen up']
+            else:
+                penDown = ['putPenDown']
+                penUp = ['putPenUp']
+
+            def scriptAddFill(script, down, up):
+                if type(script) != list:
+                    return
+                if type(script[0]) == str:
+                    if script[0] in ['penSize:', 'changePenSizeBy:']:
+                        try:
+                            if float(script[1]) >= 255.5:
+                                return 'bigSize'
+                            else:
+                                return 'smallSize'
+                        except:
+                            return
+                    else:
+                        return script
+                else:
+                    top = None
+                    for i in range(len(script)):
+                        value = scriptAddFill(script[i], down, up)
+                        if value == 'bigSize':
+                            self.bigSize = True
+                        elif value == 'smallSize':
+                            self.bigSize = False
+                            top = None
+                        elif type(value) != list or len(value) < 1:
+                            continue
+                        if value[0:len(down)+1] == down:
+                            top = i
+                        elif value[0:len(up)+1] == up and top != None and self.bigSize:
+                            script[top:i+1] = [
+                                ['penSize:', 200],
+                                ['gotoX:y:', -250, -100],
+                                down,
+                                ['xpos:', 250],
+                                up,
+                                ['gotoX:y:', -250, 100],
+                                down,
+                                ['xpos:', 250],
+                                up,
+                                ['penSize:', 255]
+                            ]
+                            top = None
+                        elif value[0] in ['call', 'doBroadcastAndWait', 'penColor:', 'changePenHueBy:', 'setPenHueTo:', 'changePenShadeBy:', 'setPenShadeTo:']:
+                            top = None
+            
+            for script in scripts:    
+                self.bigSize = False
+                scriptAddFill(script, penDown, penUp)
+
+        # Add variables, lists, and custom blocks for compatibility mode
 
         if self.compat:
 
@@ -2591,12 +2649,13 @@ class ProjectConverter:
             except:
                 self.generateWarning("Stage monitor '{}' will not be converted".format(m['opcode']))
 
-    def convertProject(self, sb3path, sb2path, gui=False, replace=False, compatibility=False, unlimitedJoin=False, limitedLists=False):
+    def convertProject(self, sb3path, sb2path, gui=False, replace=False, compatibility=False, unlimitedJoin=False, limitedLists=False, penFillScreen=False):
 
         self.compatWarning = False        
         self.compat = compatibility
         self.unlimJoin = unlimitedJoin
         self.limList = limitedLists
+        self.penFill = penFillScreen
 
         self.warnings = 0
 
@@ -2756,7 +2815,8 @@ List of Options:
 -c: Enable Scratch 3.0 compatibility mode; Add workarounds for blocks that are exclusive to or work differently in 3.0
   The indented options will automatically enable compatibility mode:
   -j: Use an unlimited join workaround
-  -l: Use custom blocks to automatically limit list length to 200,000''')
+  -l: Use custom blocks to automatically limit list length to 200,000
+-p: Tries to insert blocks to fill the screen when the pen size is set to a value greater than 255''')
         exit()
 
     gui = False
@@ -2781,8 +2841,9 @@ List of Options:
     c = '-c' in args
     j = '-j' in args
     l = '-l' in args
+    p = '-p' in args
 
-    result = ProjectConverter().convertProject(sb3path, sb2path, gui=gui, replace=gui, compatibility=(c or j or l), unlimitedJoin=j, limitedLists=l)
+    result = ProjectConverter().convertProject(sb3path, sb2path, gui=gui, replace=gui, compatibility=(c or j or l), unlimitedJoin=j, limitedLists=l, penFillScreen=p)
     warnings = result[0]
     sb2path = result[2]
 
