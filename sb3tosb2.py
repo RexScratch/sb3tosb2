@@ -1440,7 +1440,7 @@ class ProjectConverter:
                         wav = wavFile.read()
                     except:
                         # Original solution which works in most cases
-                        wav = wav[0:22] + (1).to_bytes(2, byteorder='little') + srate.to_bytes(4, byteorder='little') + wav[28:40] + size.to_bytes(4, byteorder='little') + wav[44:]
+                        wav = wav[0:22] + (1).to_bytes(2, byteorder='little') + srate.to_bytes(4, byteorder='little') + wav[28:40] + size.to_bytes(4, byteorder='little') + sampData
                     self.soundAssets[s['assetId']].append(False)
                     md5 = hashlib.md5(wav).hexdigest()
                 elif error and not srate <= 22050 and not channels == 1:
