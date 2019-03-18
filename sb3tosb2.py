@@ -743,10 +743,20 @@ class BlockArgMapper:
         return ['isLoud']
 
     def sensing_timer(self, block, blocks):
-        return ['timer']
+        if self.converter.compat:
+            self.converter.timerCompat = True
+            return ['*', 86400, ['-', ['timestamp'], ['readVariable', 'reset time']]]
+        else:
+            self.converter.compatWarning = True
+            return ['timer']
 
     def sensing_resettimer(self, block, blocks):
-        return ['timerReset']
+        if self.converter.compat:
+            self.converter.resetTimer = True
+            self.converter.timerCompat = True
+            return ['call', 'reset timer']
+        else:
+            return ['timerReset']
 
     def sensing_of(self, block, blocks):
         attr = self.converter.fieldVal('PROPERTY', block)
@@ -1687,6 +1697,7 @@ class ProjectConverter:
         self.strContains = False
         self.listSearch = False
         self.penColor = False
+        self.resetTimer = False
 
         for s in target['sounds']:
             self.addSound(s)
@@ -2354,6 +2365,14 @@ class ProjectConverter:
                 )
                 self.scriptCount += 9
 
+            if self.resetTimer:
+                scripts.append(
+                    [0,
+                        0,
+                        [["procDef", "reset timer", [], [], True], ["setVar:to:", "reset time", ["timestamp"]], ["timerReset"]]]
+                )
+                self.scriptCount += 1
+
         sprite['scripts'] = scripts
         sprite['variables'] = variables
         sprite['lists'] = lists
@@ -2552,6 +2571,8 @@ class ProjectConverter:
             name = 'Stage' if target['isStage'] else target['name']
             maxLen = max(maxLen, len(name))
 
+        self.timerCompat = False
+
         for target in self.jsonData['targets']:
             sprite = self.convertTarget(target, targetsDone, maxLen)
             if sprite[0]:
@@ -2559,6 +2580,27 @@ class ProjectConverter:
             else:
                 sprites.append(sprite[1])
             targetsDone += 1
+
+        if self.timerCompat:
+            output['variables'].append(
+                {
+                    'name': 'reset time',
+                    'value': 0,
+                    'isPersistent': False
+                }
+            )
+            gfResetTimer = [0,
+                0,
+                [["whenGreenFlag"],
+                    ["doIf",
+                        [">",
+                            ["-", ["*", 86400, ["-", ["timestamp"], ["readVariable", "reset time"]]], ["timer"]],
+                            "0.1"],
+                        [["setVar:to:", "reset time", ["-", ["timestamp"], ["/", ["timer"], 86400]]]]]]]
+            output['scripts'].append(gfResetTimer)
+            for sprite in sprites:
+                sprite['scripts'].append(gfResetTimer)
+            self.scriptCount += 1 + len(sprites)
 
         output['info']['scriptCount'] = self.scriptCount
         output['info']['spriteCount'] = self.totalTargets - 1
