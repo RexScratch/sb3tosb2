@@ -16,6 +16,7 @@ Usage
 1. Run sb3tosb2.py with Python
 2. Select the SB3 file to open
 3. Either select the SB2 file to save to or type in a new file name
+4. Click OK to exit
 
 Usage (command line)
 --------------
@@ -25,7 +26,7 @@ Usage (command line)
 
 Arguments
 --------------
-Arguments should be separated by a space.
+Arguments should be separated by a space.<br>
 List of arguments:
 - `-c`: This enables compatibility mode. Workarounds for the following blocks will be inserted into sprites:
   - costume [number v]

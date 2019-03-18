@@ -5,12 +5,15 @@ sys.setrecursionlimit(4100)
 def printWarning(message):
     print("WARNING: " + message)
 
-def printError(message):
-    lines = message.split('\n')
-    lines = ["       " + line for line in lines]
-    lines[0] = "ERROR: " + lines[0][7:]
-    print('\n'.join(lines))
-    input('Press enter to exit... ')
+def printError(message, gui):
+    if gui:
+        messagebox.showerror('Error', message, icon='warning')
+    else:
+        lines = message.split('\n')
+        lines = ["       " + line for line in lines]
+        lines[0] = "ERROR: " + lines[0][7:]
+        print('\n'.join(lines))
+        input('Press enter to exit... ')
     exit()
 
 def rightPad(s, l, c):
@@ -2487,7 +2490,7 @@ class ProjectConverter:
             except:
                 self.generateWarning("Stage monitor '{}' will not be converted".format(m['opcode']))
 
-    def convertProject(self, sb3path, sb2path, replace=False, compatibility=False):
+    def convertProject(self, sb3path, sb2path, gui=False, replace=False, compatibility=False):
 
         self.compatWarning = False
         
@@ -2495,7 +2498,7 @@ class ProjectConverter:
         self.warnings = 0
 
         if not sb3path[-3:] == 'sb3':
-            printError("File '{}' is not an sb3 file".format(sb3path))
+            printError("File '{}' is not an sb3 file".format(sb3path), gui)
 
         if not sb2path[-3:] == 'sb2':
             self.generateWarning("The converted project will be saved to '{}' instead of '{}'".format(sb2path + '.sb2', sb2path))
@@ -2506,7 +2509,7 @@ class ProjectConverter:
         try:
             self.zfsb3 = zipfile.ZipFile(sb3path, 'r')
         except:
-            printError("File '{}' does not exist".format(sb3path))
+            printError("File '{}' does not exist".format(sb3path), gui)
 
         print('')
         try:
@@ -2598,13 +2601,30 @@ class ProjectConverter:
 
         return (self.warnings, self.compatWarning and not self.compat, sb2path)
 
+def success(sb2path, warnings, gui):
+    if gui:
+        if warnings == 0:
+            messagebox.showinfo("Success", "Completed with no warnings")
+        elif warnings == 1:
+            messagebox.showinfo("Success", "Completed with {} warning".format(warnings))
+        else:
+            messagebox.showinfo("Success", "Completed with {} warnings".format(warnings))
+    else:
+        print('')
+        if warnings == 0:
+            print("Saved to '{}' with no warnings".format(sb2path))
+        elif warnings == 1:
+            print("Saved to '{}' with {} warning".format(sb2path, warnings))
+        else:
+            print("Saved to '{}' with {} warnings".format(sb2path, warnings))
+
 if __name__ == '__main__':
 
-    dialog = False
+    gui = False
     if len(sys.argv) < 3:
-        dialog = True
+        gui = True
         import tkinter
-        from tkinter import filedialog
+        from tkinter import filedialog, messagebox
 
         root = tkinter.Tk()
         root.withdraw()
@@ -2619,32 +2639,30 @@ if __name__ == '__main__':
         for arg in sys.argv[1:-2]:
             args.append(arg)
 
-    result = ProjectConverter().convertProject(sb3path, sb2path, replace=dialog, compatibility=('-c' in args))
+    result = ProjectConverter().convertProject(sb3path, sb2path, gui=gui, replace=gui, compatibility=('-c' in args))
     warnings = result[0]
     sb2path = result[2]
 
-    print('')
-    if warnings == 0:
-        print("Saved to '{}' with no warnings".format(sb2path))
-    elif warnings == 1:
-        print("Saved to '{}' with {} warning".format(sb2path, warnings))
-    else:
-        print("Saved to '{}' with {} warnings".format(sb2path, warnings))
-
     if result[1]:
-        print('')
-        printWarning("The converted project may not work properly unless compatibility mode is enabled")
-        retry = input("Would you like to re-convert '{}' with compatibility mode enabled? (Y/N): ".format(sb3path))
-        if retry[0] == 'Y' or retry[0] == 'y':
-            
-            result = ProjectConverter().convertProject(sb3path, sb2path, replace=True, compatibility=True)
+        if gui:
+            retry = messagebox.askquestion('Enable Compatibility Mode',
+                "The converted project may not work properly unless compatibility mode is enabled.\n\nWould you like to re-convert the sb3 file with compatibility mode enabled?".format(sb3path), 
+                icon='warning'
+            )
+            retry = (retry == 'yes')
+        else:
+            print('')
+            printWarning("The converted project may not work properly unless compatibility mode is enabled.")
+            retry = input("Would you like to re-convert '{}' with compatibility mode enabled? (Y/N): ".format(sb3path))
+            retry = (retry[0] == 'Y' or retry[0] == 'y')
+
+        if retry:
+            result = ProjectConverter().convertProject(sb3path, sb2path, gui=gui, replace=True, compatibility=True)
             warnings = result[0]
             sb2path = result[2]
 
-            print('')
-            if warnings == 0:
-                print("Saved to '{}' with no warnings".format(sb2path))
-            elif warnings == 1:
-                print("Saved to '{}' with {} warning".format(sb2path, warnings))
-            else:
-                print("Saved to '{}' with {} warnings".format(sb2path, warnings))
+            success(sb2path, warnings, gui)
+        else:
+            success(sb2path, warnings, gui)
+    else:
+        success(sb2path, warnings, gui)
