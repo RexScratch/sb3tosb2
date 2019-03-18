@@ -32,6 +32,7 @@ List of arguments:
   - set drag mode [ v]
   - <[] contains []?> (may experience performance loss)
   - (item # of [] in [ v]) (may experience performance loss)
+  - pen color blocks (including HSV and shade blocks)
 
 Known Issues
 --------------

@@ -395,30 +395,134 @@ class BlockArgMapper:
             return ['putPenUp']
 
     def pen_setPenColorToColor(self, block, blocks):
-        output = ['penColor:']
+        if self.converter.compat:
+            self.converter.penColor = True
+            output = ['call', 'set pen color to %c']
+        else:
+            output = ['penColor:']
         output.append(self.converter.inputVal('COLOR', block, blocks))
         return output
 
     def pen_changePenHueBy(self, block, blocks):
-        output = ['changePenHueBy:']
+        if self.converter.compat:
+            self.converter.penColor = True
+            output = ['call', 'change pen color by %n']
+        else:
+            output = ['changePenHueBy:']
         output.append(self.converter.inputVal('HUE', block, blocks))
         return output
 
     def pen_setPenHueToNumber(self, block, blocks):
-        output = ['setPenHueTo:']
+        if self.converter.compat:
+            self.converter.penColor = True
+            output = ['call', 'set pen color to %n']
+        else:
+            output = ['setPenHueTo:']
         output.append(self.converter.inputVal('HUE', block, blocks))
         return output
 
     def pen_changePenShadeBy(self, block, blocks):
-        output = ['changePenShadeBy:']
+        if self.converter.compat:
+            self.converter.penColor = True
+            output = ['call', 'change pen shade by %n']
+        else:
+            output = ['changePenShadeBy:']
         output.append(self.converter.inputVal('SHADE', block, blocks))
         return output
 
     def pen_setPenShadeToNumber(self, block, blocks):
-        output = ['setPenShadeTo:']
+        if self.converter.compat:
+            self.converter.penColor = True
+            output = ['call', 'set pen shade to %n']
+        else:
+            output = ['setPenShadeTo:']
         output.append(self.converter.inputVal('SHADE', block, blocks))
         return output
 
+    def pen_changePenColorParamBy(self, block, blocks):
+        param = self.converter.inputVal('COLOR_PARAM', block, blocks)
+        value = self.converter.inputVal('VALUE', block, blocks)
+        if self.converter.compat:
+            self.converter.penColor = True
+            return ['call', 'change pen %s by %n', param, value]
+        else:
+            self.converter.compatWarning = True
+            if param == 'color':
+                if type(value) == str:
+                    try:
+                        value = float(value)
+                    except:
+                        pass
+                if type(value) == float or type(value) == int:
+                    value *= 2
+                else:
+                    value = ['*', 2, value]
+                output = ['changePenHueBy:']
+                output.append(value)
+                return output
+            elif param == 'brightness':
+                if type(value) == str:
+                    try:
+                        value = float(value)
+                    except:
+                        pass
+                if type(value) == float or type(value) == int:
+                    value /= 2
+                else:
+                    value = ['/', value, 2]
+                output = ['changePenShadeBy:']
+                output.append(value)
+                return output
+            else:
+                if type(param) == list:
+                    paramStr = '[blocks...]'
+                else:
+                    paramStr = param
+                self.converter.generateWarning("Incompatible block 'change pen [{} v] by ({})'".format(paramStr, value))
+                return ['pen_changeColorParamBy', value, param]
+    
+    def pen_setPenColorParamTo(self, block, blocks):
+        param = self.converter.inputVal('COLOR_PARAM', block, blocks)
+        value = self.converter.inputVal('VALUE', block, blocks)
+        if self.converter.compat:
+            self.converter.penColor = True
+            return ['call', 'set pen %s to %n', param, value]
+        else:
+            self.converter.compatWarning = True
+            if param == 'color':
+                if type(value) == str:
+                    try:
+                        value = float(value)
+                    except:
+                        pass
+                if type(value) == float or type(value) == int:
+                    value *= 2
+                else:
+                    value = ['*', 2, value]
+                output = ['setPenHueTo:']
+                output.append(value)
+                return output
+            elif param == 'brightness':
+                if type(value) == str:
+                    try:
+                        value = float(value)
+                    except:
+                        pass
+                if type(value) == float or type(value) == int:
+                    value /= 2
+                else:
+                    value = ['/', value, 2]
+                output = ['setPenShadeTo:']
+                output.append(value)
+                return output
+            else:
+                if type(param) == list:
+                    paramStr = '[blocks...]'
+                else:
+                    paramStr = param
+                self.converter.generateWarning("Incompatible block 'set pen [{} v] to ({})'".format(paramStr, value))
+                return ['pen_setPenColorParamTo', value, param]
+    
     def pen_changePenSizeBy(self, block, blocks):
         output = ['changePenSizeBy:']
         output.append(self.converter.inputVal('SIZE', block, blocks))
@@ -428,78 +532,6 @@ class BlockArgMapper:
         output = ['penSize:']
         output.append(self.converter.inputVal('SIZE', block, blocks))
         return output
-
-    def pen_setPenColorParamTo(self, block, blocks):
-        param = self.converter.inputVal('COLOR_PARAM', block, blocks)
-        value = self.converter.inputVal('VALUE', block, blocks)
-        self.converter.compatWarning = True
-        if param == 'color':
-            if type(value) == str:
-                try:
-                    value = float(value)
-                except:
-                    pass
-            if type(value) == float or type(value) == int:
-                value *= 2
-            else:
-                value = ['*', 2, value]
-            output = ['setPenHueTo:']
-            output.append(value)
-            return output
-        elif param == 'brightness':
-            if type(value) == str:
-                try:
-                    value = float(value)
-                except:
-                    pass
-            if type(value) == float or type(value) == int:
-                value /= 2
-            else:
-                value = ['/', value, 2]
-            output = ['setPenShadeTo:']
-            output.append(value)
-            return output
-        else:
-            if type(param) == list:
-                param = '[blocks...]'
-            self.converter.generateWarning("Incompatible block 'set pen [{} v] to ({})'".format(param, value))
-            return ['pen_setPenColorParamTo', value, param]
-
-    def pen_changePenColorParamBy(self, block, blocks):
-        param = self.converter.inputVal('COLOR_PARAM', block, blocks)
-        value = self.converter.inputVal('VALUE', block, blocks)
-        self.converter.compatWarning = True
-        if param == 'color':
-            if type(value) == str:
-                try:
-                    value = float(value)
-                except:
-                    pass
-            if type(value) == float or type(value) == int:
-                value *= 2
-            else:
-                value = ['*', 2, value]
-            output = ['changePenHueBy:']
-            output.append(value)
-            return output
-        elif param == 'brightness':
-            if type(value) == str:
-                try:
-                    value = float(value)
-                except:
-                    pass
-            if type(value) == float or type(value) == int:
-                value /= 2
-            else:
-                value = ['/', value, 2]
-            output = ['changePenShadeBy:']
-            output.append(value)
-            return output
-        else:
-            if type(param) == list:
-                param = '[blocks...]'
-            self.converter.generateWarning("Incompatible block 'change pen [{} v] by ({})'".format(param, value))
-            return ['pen_changeColorParamBy', value, param]
 
     # Events
     
@@ -1171,6 +1203,9 @@ class ProjectConverter:
         except:
             if len(block['inputs']) == 0 and len(block['fields']) == 1 and block['shadow'] and not block['topLevel']:  # Menu opcodes and shadows
                 return self.fieldVal(list(block['fields'].items())[0][0], block)
+            elif block['shadow'] and block['topLevel']:
+                # Probably an invisible block
+                return None
             else:
                 self.generateWarning("Incompatible opcode '{}'".format(opcode))
                 if opcode in ProjectConverter.compatWarnings:
@@ -1648,6 +1683,7 @@ class ProjectConverter:
         self.penUpDown = False
         self.strContains = False
         self.listSearch = False
+        self.penColor = False
 
         for s in target['sounds']:
             self.addSound(s)
@@ -1715,9 +1751,11 @@ class ProjectConverter:
                     y = int(y)
 
                 self.compatStackReporters = []
+                substack = self.convertSubstack(key, blocks)
 
-                scripts.append([x, y, self.convertSubstack(key, blocks)])
-                self.scriptCount += 1
+                if substack != [None]:
+                    scripts.append([x, y, self.convertSubstack(key, blocks)])
+                    self.scriptCount += 1
 
         # Add variables, lists, and custom blocks for compatibility mode
 
@@ -1906,6 +1944,412 @@ class ProjectConverter:
                 )
                 self.scriptCount += 1
 
+            if self.penColor:
+                hue = self.compatVarName('hue')
+                variables.append({
+                    'name': hue,
+                    'value': 200/3,
+                    'isPersistent': False
+                })
+                sat = self.compatVarName('sat')
+                variables.append({
+                    'name': sat,
+                    'value': 100,
+                    'isPersistent': False
+                })
+                val = self.compatVarName('val')
+                variables.append({
+                    'name': val,
+                    'value': 100,
+                    'isPersistent': False
+                })
+                alpha = self.compatVarName('alpha')
+                variables.append({
+                    'name': alpha,
+                    'value': 0,
+                    'isPersistent': False
+                })
+                shade = self.compatVarName('shade')
+                variables.append({
+                    'name': shade,
+                    'value': 50,
+                    'isPersistent': False
+                })
+                minVar = self.compatVarName('min')
+                variables.append({
+                    'name': minVar,
+                    'value': 200/3,
+                    'isPersistent': False
+                })
+                maxVar = self.compatVarName('max')
+                variables.append({
+                    'name': maxVar,
+                    'value': 100,
+                    'isPersistent': False
+                })
+                diff = self.compatVarName('diff')
+                variables.append({
+                    'name': diff,
+                    'value': 100,
+                    'isPersistent': False
+                })
+                r = self.compatVarName('r')
+                variables.append({
+                    'name': r,
+                    'value': 0,
+                    'isPersistent': False
+                })
+                g = self.compatVarName('g')
+                variables.append({
+                    'name': g,
+                    'value': 50,
+                    'isPersistent': False
+                })
+                b = self.compatVarName('b')
+                variables.append({
+                    'name': b,
+                    'value': 100,
+                    'isPersistent': False
+                })
+                c = self.compatVarName('c')
+                variables.append({
+                    'name': c,
+                    'value': 0,
+                    'isPersistent': False
+                })
+                x = self.compatVarName('x')
+                variables.append({
+                    'name': x,
+                    'value': 50,
+                    'isPersistent': False
+                })
+
+                scripts.extend(
+                    [[0,
+                        0,
+                        [["procDef", "set pen color to %c", ["COLOR"], [255], True],
+                            ["doIfElse",
+                                ["=", ["*", 1, ["getParam", "COLOR", "r"]], ["getParam", "COLOR", "r"]],
+                                [["penColor:", ["getParam", "COLOR", "r"]],
+                                    ["setVar:to:",
+                                        alpha,
+                                        ["%", ["computeFunction:of:", "floor", ["/", ["getParam", "COLOR", "r"], 16777216]], 256]],
+                                    ["doIf",
+                                        ["not", ["=", ["readVariable", alpha], 0]],
+                                        [["setVar:to:",
+                                                alpha,
+                                                ["*", 100, ["-", 1, ["/", ["readVariable", alpha], 255]]]]]],
+                                    ["call",
+                                        "store RGB as HSV %n %n %n",
+                                        ["/",
+                                            ["%", ["computeFunction:of:", "floor", ["/", ["getParam", "COLOR", "r"], 65536]], 256],
+                                            255],
+                                        ["/",
+                                            ["%", ["computeFunction:of:", "floor", ["/", ["getParam", "COLOR", "r"], 256]], 256],
+                                            255],
+                                        ["/", ["%", ["getParam", "COLOR", "r"], 256], 255]]],
+                                [["doIfElse",
+                                        ["=", ["letter:of:", 1, ["getParam", "COLOR", "r"]], "#"],
+                                        [["doIfElse",
+                                                ["=", ["stringLength:", ["getParam", "COLOR", "r"]], 7],
+                                                [["call",
+                                                        "set pen color to %c",
+                                                        ["concatenate:with:",
+                                                            "0x",
+                                                            ["concatenate:with:",
+                                                                ["concatenate:with:",
+                                                                    ["letter:of:", 2, ["getParam", "COLOR", "r"]],
+                                                                    ["letter:of:", 3, ["getParam", "COLOR", "r"]]],
+                                                                ["concatenate:with:",
+                                                                    ["concatenate:with:",
+                                                                        ["letter:of:", 4, ["getParam", "COLOR", "r"]],
+                                                                        ["letter:of:", 5, ["getParam", "COLOR", "r"]]],
+                                                                    ["concatenate:with:",
+                                                                        ["letter:of:", 6, ["getParam", "COLOR", "r"]],
+                                                                        ["letter:of:", 7, ["getParam", "COLOR", "r"]]]]]]]],
+                                                [["doIfElse",
+                                                        ["=", ["stringLength:", ["getParam", "COLOR", "r"]], 4],
+                                                        [["call",
+                                                                "set pen color to %c",
+                                                                ["concatenate:with:",
+                                                                    "0x",
+                                                                    ["concatenate:with:",
+                                                                        ["concatenate:with:",
+                                                                            ["letter:of:", 2, ["getParam", "COLOR", "r"]],
+                                                                            ["letter:of:", 2, ["getParam", "COLOR", "r"]]],
+                                                                        ["concatenate:with:",
+                                                                            ["concatenate:with:",
+                                                                                ["letter:of:", 3, ["getParam", "COLOR", "r"]],
+                                                                                ["letter:of:", 3, ["getParam", "COLOR", "r"]]],
+                                                                            ["concatenate:with:",
+                                                                                ["letter:of:", 4, ["getParam", "COLOR", "r"]],
+                                                                                ["letter:of:", 4, ["getParam", "COLOR", "r"]]]]]]]],
+                                                        [["call", "set pen color to %c", -16777216]]]]]],
+                                        [["call", "set pen color to %c", -16777216]]]]]]],
+                    [0,
+                        0,
+                        [["procDef", "change pen %s by %n", ["COLOR_PARAM", "VALUE"], ["color", 10], True],
+                            ["doIfElse",
+                                ["=", ["getParam", "COLOR_PARAM", "r"], "color"],
+                                [["call",
+                                        "set pen %s to %n",
+                                        ["getParam", "COLOR_PARAM", "r"],
+                                        ["+", ["readVariable", hue], ["getParam", "VALUE", "r"]]]],
+                                [["doIfElse",
+                                        ["=", ["getParam", "COLOR_PARAM", "r"], "saturation"],
+                                        [["call",
+                                                "set pen %s to %n",
+                                                ["getParam", "COLOR_PARAM", "r"],
+                                                ["+", ["readVariable", sat], ["getParam", "VALUE", "r"]]]],
+                                        [["doIfElse",
+                                                ["=", ["getParam", "COLOR_PARAM", "r"], "brightness"],
+                                                [["call",
+                                                        "set pen %s to %n",
+                                                        ["getParam", "COLOR_PARAM", "r"],
+                                                        ["+", ["readVariable", val], ["getParam", "VALUE", "r"]]]],
+                                                [["doIf",
+                                                        ["=", ["getParam", "COLOR_PARAM", "r"], "transparency"],
+                                                        [["call",
+                                                                "set pen %s to %n",
+                                                                ["getParam", "COLOR_PARAM", "r"],
+                                                                ["+", ["readVariable", alpha], ["getParam", "VALUE", "r"]]]]]]]]]]]]],
+                    [0,
+                        0,
+                        [["procDef", "change pen color by %n", ["HUE"], [10], True],
+                            ["call", "change pen %s by %n", "color", ["/", ["getParam", "HUE", "r"], 2]]]],
+                    [0,
+                        0,
+                        [["procDef", "set pen color to %n", ["HUE"], [0], True],
+                            ["call", "set pen %s to %n", "color", ["/", ["getParam", "HUE", "r"], 2]]]],
+                    [0,
+                        0,
+                        [["procDef", "change pen shade by %n", ["SHADE"], [10], True],
+                            ["call", "set pen shade to %n", ["+", ["readVariable", shade], ["getParam", "SHADE", "r"]]]]],
+                    [0,
+                        0,
+                        [["procDef", "set pen shade to %n", ["SHADE"], [50], True],
+                            ["setVar:to:",
+                                shade,
+                                ["computeFunction:of:",
+                                    "abs",
+                                    ["-",
+                                        ["getParam", "SHADE", "r"],
+                                        ["*", 200, ["rounded", ["/", ["getParam", "SHADE", "r"], 200]]]]]],
+                            ["call", "HSV to RGB %n %n %n", ["readVariable", hue], 100, 100],
+                            ["doIfElse",
+                                ["<", ["readVariable", shade], 50],
+                                [["setVar:to:", x, ["/", ["+", ["readVariable", shade], 10], 60]],
+                                    ["setVar:to:", r, ["rounded", ["*", ["readVariable", x], ["readVariable", r]]]],
+                                    ["setVar:to:", g, ["rounded", ["*", ["readVariable", x], ["readVariable", g]]]],
+                                    ["setVar:to:", b, ["rounded", ["*", ["readVariable", x], ["readVariable", b]]]]],
+                                [["setVar:to:", x, ["/", ["-", ["readVariable", shade], 50], 60]],
+                                    ["setVar:to:",
+                                        r,
+                                        ["rounded",
+                                            ["+",
+                                                ["*", ["-", 1, ["readVariable", x]], ["readVariable", r]],
+                                                ["*", ["readVariable", x], 255]]]],
+                                    ["setVar:to:",
+                                        g,
+                                        ["rounded",
+                                            ["+",
+                                                ["*", ["-", 1, ["readVariable", x]], ["readVariable", g]],
+                                                ["*", ["readVariable", x], 255]]]],
+                                    ["setVar:to:",
+                                        b,
+                                        ["rounded",
+                                            ["+",
+                                                ["*", ["-", 1, ["readVariable", x]], ["readVariable", b]],
+                                                ["*", ["readVariable", x], 255]]]]]],
+                            ["call",
+                                "store RGB as HSV %n %n %n",
+                                ["/", ["readVariable", r], 255],
+                                ["/", ["readVariable", g], 255],
+                                ["/", ["readVariable", b], 255]],
+                            ["penColor:",
+                                ["+",
+                                    ["readVariable", b],
+                                    ["*",
+                                        256,
+                                        ["+",
+                                            ["readVariable", g],
+                                            ["*",
+                                                256,
+                                                ["+",
+                                                    ["readVariable", r],
+                                                    ["*", 256, ["rounded", ["*", 2.55, ["-", 100, ["readVariable", alpha]]]]]]]]]]]]],
+                    [0,
+                        0,
+                        [["procDef", "set pen %s to %n", ["COLOR_PARAM", "VALUE"], ["color", 50], True],
+                            ["doIfElse",
+                                ["=", ["getParam", "COLOR_PARAM", "r"], "color"],
+                                [["setPenHueTo:", ["*", 2, ["getParam", "VALUE", "r"]]],
+                                    ["setVar:to:", hue, ["%", ["getParam", "VALUE", "r"], 100]],
+                                    ["stopScripts", "this script"]],
+                                [["doIfElse",
+                                        ["=", ["getParam", "COLOR_PARAM", "r"], "saturation"],
+                                        [["doIfElse",
+                                                ["<", ["getParam", "VALUE", "r"], 0],
+                                                [["setVar:to:", sat, 0]],
+                                                [["doIfElse",
+                                                        [">", ["getParam", "VALUE", "r"], 100],
+                                                        [["setVar:to:", sat, 100]],
+                                                        [["setVar:to:", sat, ["getParam", "VALUE", "r"]]]]]]],
+                                        [["doIfElse",
+                                                ["=", ["getParam", "COLOR_PARAM", "r"], "brightness"],
+                                                [["doIfElse",
+                                                        ["<", ["getParam", "VALUE", "r"], 0],
+                                                        [["setVar:to:", val, 0]],
+                                                        [["doIfElse",
+                                                                [">", ["getParam", "VALUE", "r"], 100],
+                                                                [["setVar:to:", val, 100]],
+                                                                [["setVar:to:", val, ["getParam", "VALUE", "r"]]]]]]],
+                                                [["doIfElse",
+                                                        ["=", ["getParam", "COLOR_PARAM", "r"], "transparency"],
+                                                        [["doIfElse",
+                                                                ["<", ["getParam", "VALUE", "r"], 0],
+                                                                [["setVar:to:", alpha, 0]],
+                                                                [["doIfElse",
+                                                                        [">", ["getParam", "VALUE", "r"], 100],
+                                                                        [["setVar:to:", alpha, 100]],
+                                                                        [["setVar:to:", alpha, ["getParam", "VALUE", "r"]]]]]]],
+                                                        [["stopScripts", "this script"]]]]]]]]],
+                            ["call", "HSV to RGB %n %n %n", ["readVariable", hue], ["readVariable", sat], ["readVariable", val]],
+                            ["penColor:",
+                                ["+",
+                                    ["readVariable", b],
+                                    ["*",
+                                        256,
+                                        ["+",
+                                            ["readVariable", g],
+                                            ["*",
+                                                256,
+                                                ["+",
+                                                    ["readVariable", r],
+                                                    ["*", 256, ["rounded", ["*", 2.55, ["-", 100, ["readVariable", alpha]]]]]]]]]]]]],
+                    [0,
+                        0,
+                        [["procDef", "store RGB as HSV %n %n %n", ["R", "G", "B"], [0, 0, 0], True],
+                            ["doIfElse",
+                                ["not",
+                                    ["|",
+                                        [">", ["getParam", "R", "r"], ["getParam", "G", "r"]],
+                                        [">", ["getParam", "R", "r"], ["getParam", "B", "r"]]]],
+                                [["setVar:to:", minVar, ["getParam", "R", "r"]]],
+                                [["doIfElse",
+                                        ["not",
+                                            ["|",
+                                                [">", ["getParam", "G", "r"], ["getParam", "R", "r"]],
+                                                [">", ["getParam", "G", "r"], ["getParam", "B", "r"]]]],
+                                        [["setVar:to:", minVar, ["getParam", "G", "r"]]],
+                                        [["setVar:to:", minVar, ["getParam", "B", "r"]]]]]],
+                            ["doIfElse",
+                                ["not",
+                                    ["|",
+                                        ["<", ["getParam", "R", "r"], ["getParam", "G", "r"]],
+                                        ["<", ["getParam", "R", "r"], ["getParam", "B", "r"]]]],
+                                [["setVar:to:", maxVar, ["getParam", "R", "r"]]],
+                                [["doIfElse",
+                                        ["not",
+                                            ["|",
+                                                ["<", ["getParam", "G", "r"], ["getParam", "R", "r"]],
+                                                ["<", ["getParam", "G", "r"], ["getParam", "B", "r"]]]],
+                                        [["setVar:to:", maxVar, ["getParam", "G", "r"]]],
+                                        [["setVar:to:", maxVar, ["getParam", "B", "r"]]]]]],
+                            ["setVar:to:", diff, ["-", ["readVariable", maxVar], ["readVariable", minVar]]],
+                            ["doIfElse",
+                                ["=", ["readVariable", diff], 0],
+                                [["setVar:to:", hue, 0], ["setVar:to:", sat, 0]],
+                                [["doIfElse",
+                                        ["=", ["readVariable", maxVar], ["getParam", "R", "r"]],
+                                        [["setVar:to:",
+                                                hue,
+                                                ["/",
+                                                    ["%",
+                                                        ["/",
+                                                            ["-", ["getParam", "G", "r"], ["getParam", "B", "r"]],
+                                                            ["readVariable", diff]],
+                                                        6],
+                                                    0.06]]],
+                                        [["doIfElse",
+                                                ["=", ["readVariable", maxVar], ["getParam", "G", "r"]],
+                                                [["setVar:to:",
+                                                        hue,
+                                                        ["/",
+                                                            ["+",
+                                                                ["/",
+                                                                    ["-", ["getParam", "B", "r"], ["getParam", "R", "r"]],
+                                                                    ["readVariable", diff]],
+                                                                2],
+                                                            0.06]]],
+                                                [["setVar:to:",
+                                                        hue,
+                                                        ["/",
+                                                            ["+",
+                                                                ["/",
+                                                                    ["-", ["getParam", "R", "r"], ["getParam", "G", "r"]],
+                                                                    ["readVariable", diff]],
+                                                                4],
+                                                            0.06]]]]]],
+                                    ["setVar:to:", sat, ["*", 100, ["/", ["readVariable", diff], ["readVariable", maxVar]]]]]],
+                            ["setVar:to:", val, ["*", 100, ["readVariable", maxVar]]]]],
+                    [0,
+                        0,
+                        [["procDef", "HSV to RGB %n %n %n", ["H", "S", "V"], [0, 0, 0], True],
+                            ["setVar:to:",
+                                c,
+                                ["/", ["*", ["getParam", "V", "r"], ["getParam", "S", "r"]], 10000]],
+                            ["setVar:to:",
+                                x,
+                                ["*",
+                                    ["readVariable", c],
+                                    ["-",
+                                        1,
+                                        ["computeFunction:of:",
+                                            "abs",
+                                            ["-", ["%", ["*", 0.06, ["getParam", "H", "r"]], 2], 1]]]]],
+                            ["doIfElse",
+                                ["<", ["getParam", "H", "r"], ["/", 100, 6]],
+                                [["setVar:to:", r, ["readVariable", c]],
+                                    ["setVar:to:", g, ["readVariable", x]],
+                                    ["setVar:to:", b, 0]],
+                                [["doIfElse",
+                                        ["<", ["getParam", "H", "r"], ["/", 100, 3]],
+                                        [["setVar:to:", r, ["readVariable", x]],
+                                            ["setVar:to:", g, ["readVariable", c]],
+                                            ["setVar:to:", b, 0]],
+                                        [["doIfElse",
+                                                ["<", ["getParam", "H", "r"], 50],
+                                                [["setVar:to:", r, 0],
+                                                    ["setVar:to:", g, ["readVariable", c]],
+                                                    ["setVar:to:", b, ["readVariable", x]]],
+                                                [["doIfElse",
+                                                        ["<", ["getParam", "H", "r"], ["/", 200, 3]],
+                                                        [["setVar:to:", r, 0],
+                                                            ["setVar:to:", g, ["readVariable", x]],
+                                                            ["setVar:to:", b, ["readVariable", c]]],
+                                                        [["doIfElse",
+                                                                ["<", ["getParam", "H", "r"], ["/", 250, 3]],
+                                                                [["setVar:to:", r, ["readVariable", x]],
+                                                                    ["setVar:to:", g, 0],
+                                                                    ["setVar:to:", b, ["readVariable", c]]],
+                                                                [["setVar:to:", r, ["readVariable", x]],
+                                                                    ["setVar:to:", g, 0],
+                                                                    ["setVar:to:", b, ["readVariable", c]]]]]]]]]]]],
+                            ["setVar:to:",
+                                x,
+                                ["-", ["/", ["getParam", "V", "r"], 100], ["readVariable", c]]],
+                            ["setVar:to:",
+                                r,
+                                ["rounded", ["*", 255, ["+", ["readVariable", r], ["readVariable", x]]]]],
+                            ["setVar:to:",
+                                g,
+                                ["rounded", ["*", 255, ["+", ["readVariable", g], ["readVariable", x]]]]],
+                            ["setVar:to:",
+                                b,
+                                ["rounded", ["*", 255, ["+", ["readVariable", b], ["readVariable", x]]]]]]]]
+                )
+                self.scriptCount += 9
 
         sprite['scripts'] = scripts
         sprite['variables'] = variables
