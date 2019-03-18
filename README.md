@@ -21,20 +21,23 @@ Usage
 Usage (command line)
 --------------
 1. Open the terminal or command prompt and navigate to the directory of the sb3tosb2.py file.
-2. Enter the following command: `python sb3tosb2.py [args] [sb3 location] [sb2 location]` (leave `[args]` empty for default options)
+2. Enter the following command: `python sb3tosb2.py [unordered options] sb3path sb2path`<br>Options are not necessary.
 3. If an error is given, make sure you entered a valid sb3 file.
 
 Arguments
 --------------
-Arguments should be separated by a space.<br>
-List of arguments:
-- `-c`: This enables compatibility mode. Workarounds for the following blocks will be inserted into sprites:
+Options should be separated by a space.<br>
+List of options:
+- `-h`: Displays the program arguments and list of options
+- `-c`: This enables compatibility mode. Workarounds for the following blocks will be added to sprites:
   - costume [number v]
   - set drag mode [ v]
-  - <[] contains []?> (may experience performance loss)
-  - (item # of [] in [ v]) (may experience performance loss)
+  - <[] contains []?> (may result in performance loss)
+  - (item # of [] in [ v]) (may result in performance loss)
   - pen color blocks (including HSV and shade blocks)
   - timer blocks
+- `-j`: Automatically enables compatibility mode and adds an unlimited join workaround (may result in significant performance loss)
+- `-l`: Automatically enables compatibility mode and adds custom blocks to automatically limit list length to 200,000 (may result in performance loss)
 
 Known Issues
 --------------
@@ -42,3 +45,4 @@ Known Issues
 - Compatibility mode changes variable monitor labels
 - Compatibility mode allows ([ v] of [ v]) to access only variables (not attributes like x position, backdrop #, etc.)
 - Dragging in projects converted with compatibility mode does not have the same pen behavior as in 3.0
+- Unlimited join does not check case when checking string equality

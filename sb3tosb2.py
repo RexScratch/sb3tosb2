@@ -857,10 +857,18 @@ class BlockArgMapper:
         return output
 
     def operator_join(self, block, blocks):
-        output = ['concatenate:with:']
-        output.append(self.converter.inputVal('STRING1', block, blocks))
-        output.append(self.converter.inputVal('STRING2', block, blocks))
-        return output
+        if self.converter.unlimJoin:
+            self.converter.joinStr = True
+            stackReporter = ['call', 'join %s %s']
+            stackReporter.append(self.converter.inputVal('STRING1', block, blocks))
+            stackReporter.append(self.converter.inputVal('STRING2', block, blocks))
+            self.converter.compatStackReporters[-1].append(stackReporter)
+            return ['getLine:ofList:', len(self.converter.compatStackReporters[-1]), self.converter.compatVarName('results')]
+        else:
+            output = ['concatenate:with:']
+            output.append(self.converter.inputVal('STRING1', block, blocks))
+            output.append(self.converter.inputVal('STRING2', block, blocks))
+            return output
 
     def operator_letter_of(self, block, blocks):
         output = ['letter:of:']
@@ -934,7 +942,11 @@ class BlockArgMapper:
         return output
 
     def data_addtolist(self, block, blocks):
-        output = ['append:toList:']
+        if self.converter.limList:
+            self.converter.addList = True
+            output = ['call', 'add %s to %m.list']
+        else:
+            output = ['append:toList:']
         output.append(self.converter.inputVal('ITEM', block, blocks))
         output.append(self.converter.fieldVal('LIST', block))
         return output
@@ -951,7 +963,11 @@ class BlockArgMapper:
         return output
 
     def data_insertatlist(self, block, blocks):
-        output = ['insert:at:ofList:']
+        if self.converter.limList:
+            self.converter.insertList = True
+            output = ['call', 'insert %s at %n of %m.list']
+        else:
+            output = ['insert:at:ofList:']
         output.append(self.converter.inputVal('ITEM', block, blocks))
         output.append(self.converter.inputVal('INDEX', block, blocks))
         output.append(self.converter.fieldVal('LIST', block))
@@ -1697,8 +1713,11 @@ class ProjectConverter:
         if not isStage:
             self.dragMode = target['draggable']
         self.penUpDown = False
+        self.joinStr = False
         self.strContains = False
         self.listSearch = False
+        self.addList = False
+        self.insertList = False
         self.penColor = False
         self.resetTimer = False
 
@@ -1859,7 +1878,7 @@ class ProjectConverter:
 
                 self.scriptCount += 3
 
-            if self.strContains or self.listSearch:
+            if self.joinStr or self.strContains or self.listSearch:
                 returnVar = self.compatVarName('return')
                 variables.append({
                     'name': returnVar,
@@ -1878,13 +1897,53 @@ class ProjectConverter:
                     'visible': False
                 })
 
-            if self.strContains:
+            if self.joinStr or self.strContains:
                 i = self.compatVarName('i')
                 variables.append({
                     'name': i,
                     'value': 0,
                     'isPersistent': False
                 })
+
+            if self.joinStr:
+                joinList = self.compatVarName('join')
+                lists.append({
+                    'listName': joinList,
+                    'contents': [],
+                    'isPersistent': False,
+                    'x': 0,
+                    'y': 0,
+                    'width': 100,
+                    'height': 200,
+                    'visible': False
+                })
+                scripts.append(
+                    [0,
+                        0,
+                        [["procDef", "join %s %s", ["STRING1", "STRING2"], ["", ""], True],
+                            ["doIfElse",
+                                [">",
+                                    ["+", ["stringLength:", ["getParam", "STRING1", "r"]], ["stringLength:", ["getParam", "STRING2", "r"]]],
+                                    10240],
+                                [["doIf",
+                                        ["not", ["=", ["contentsOfList:", joinList], ["getParam", "STRING1", "r"]]],
+                                        [["deleteLine:ofList:", "all", joinList],
+                                            ["setVar:to:", "i", "0"],
+                                            ["doRepeat",
+                                                ["stringLength:", ["getParam", "STRING1", "r"]],
+                                                [["changeVar:by:", "i", 1],
+                                                    ["append:toList:", ["letter:of:", ["readVariable", "i"], ["getParam", "STRING1", "r"]], joinList]]]]],
+                                    ["setVar:to:", "i", "0"],
+                                    ["doRepeat",
+                                        ["stringLength:", ["getParam", "STRING2", "r"]],
+                                        [["changeVar:by:", "i", 1],
+                                            ["append:toList:", ["letter:of:", ["readVariable", "i"], ["getParam", "STRING2", "r"]], joinList]]],
+                                    ["append:toList:", ["contentsOfList:", joinList], "results"]],
+                                [["append:toList:", ["concatenate:with:", ["getParam", "STRING1", "r"], ["getParam", "STRING2", "r"]], "results"]]]]]
+                )
+                self.scriptCount += 1
+            
+            if self.strContains:
                 j = self.compatVarName('j')
                 variables.append({
                     'name': j,
@@ -1958,6 +2017,26 @@ class ProjectConverter:
                                                     ["getParam", "ITEM", "r"]],
                                                 [["append:toList:", ["readVariable", returnVar], results], ["stopScripts", "this script"]]]]],
                                     ["append:toList:", 0, results]]]]]
+                )
+                self.scriptCount += 1
+
+            if self.addList:
+                scripts.append(
+                    [0,
+                        0,
+                        [["procDef", "add %s to %m.list", ["ITEM", "LIST"], ["thing", ""], True],
+                            ["append:toList:", ["getParam", "ITEM", "r"], ["getParam", "LIST", "r"]],
+                            ["doRepeat", ["-", ["lineCountOfList:", ["getParam", "LIST", "r"]], 200000], [["deleteLine:ofList:", "last", ["getParam", "LIST", "r"]]]]]]
+                )
+                self.scriptCount += 1
+            
+            if self.insertList:
+                scripts.append(
+                    [0,
+                        0,
+                        [["procDef", "insert %s at %n of %m.list", ["ITEM", "INDEX", "LIST"], ["thing", 1, ""], True],
+                            ["insert:at:ofList:", ["getParam", "ITEM", "r"], ["getParam", "INDEX", "r"], ["getParam", "LIST", "r"]],
+                            ["doRepeat", ["-", ["lineCountOfList:", ["getParam", "LIST", "r"]], 200000], [["deleteLine:ofList:", "last", ["getParam", "LIST", "r"]]]]]]
                 )
                 self.scriptCount += 1
 
@@ -2512,11 +2591,13 @@ class ProjectConverter:
             except:
                 self.generateWarning("Stage monitor '{}' will not be converted".format(m['opcode']))
 
-    def convertProject(self, sb3path, sb2path, gui=False, replace=False, compatibility=False):
+    def convertProject(self, sb3path, sb2path, gui=False, replace=False, compatibility=False, unlimitedJoin=False, limitedLists=False):
 
-        self.compatWarning = False
-        
+        self.compatWarning = False        
         self.compat = compatibility
+        self.unlimJoin = unlimitedJoin
+        self.limList = limitedLists
+
         self.warnings = 0
 
         if not sb3path[-3:] == 'sb3':
@@ -2665,6 +2746,19 @@ def success(sb2path, warnings, gui):
 
 if __name__ == '__main__':
 
+    if '-h' in sys.argv:
+
+        print(
+        '''
+Arguments: sb3tosb2.py [unordered options] sb3path sb2path
+List of Options:
+-h: Show this list
+-c: Enable Scratch 3.0 compatibility mode; Add workarounds for blocks that are exclusive to or work differently in 3.0
+  The indented options will automatically enabled compatibility mode:
+  -j: Use an unlimited join workaround
+  -l: Use custom blocks to automatically limit list length to 200,000''')
+        exit()
+
     gui = False
     if len(sys.argv) < 3:
         gui = True
@@ -2684,7 +2778,11 @@ if __name__ == '__main__':
         for arg in sys.argv[1:-2]:
             args.append(arg)
 
-    result = ProjectConverter().convertProject(sb3path, sb2path, gui=gui, replace=gui, compatibility=('-c' in args))
+    c = '-c' in args
+    j = '-j' in args
+    l = '-l' in args
+
+    result = ProjectConverter().convertProject(sb3path, sb2path, gui=gui, replace=gui, compatibility=(c or j or l), unlimitedJoin=j, limitedLists=l)
     warnings = result[0]
     sb2path = result[2]
 
