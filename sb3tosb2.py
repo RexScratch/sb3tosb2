@@ -1790,13 +1790,13 @@ class ProjectConverter:
 
                 scripts.append(
                     [0,
-					    0,
-					    [["procDef", "pen down", [], [], True], ["putPenDown"], ["setVar:to:", pen, "down"]]]
+                        0,
+                        [["procDef", "pen down", [], [], True], ["putPenDown"], ["setVar:to:", pen, "down"]]]
                 )
                 scripts.append(
                     [0,
-					    0,
-					    [["procDef", "pen up", [], [], True], ["putPenUp"], ["setVar:to:", pen, "up"]]]
+                        0,
+                        [["procDef", "pen up", [], [], True], ["putPenUp"], ["setVar:to:", pen, "up"]]]
                 )
 
                 self.scriptCount += 2
