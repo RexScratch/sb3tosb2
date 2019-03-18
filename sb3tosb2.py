@@ -1793,10 +1793,6 @@ class ProjectConverter:
                     scripts.append([x, y, self.convertSubstack(key, blocks)])
                     self.scriptCount += 1
 
-        self.blockID = 0
-        for script in scripts:
-            self.getCommentBlockIDs(script[2])
-
         # Find where the pen size is greater than 255 and add a screen fill
 
         if self.penFill:
@@ -1820,8 +1816,15 @@ class ProjectConverter:
                         except:
                             return
                     else:
-                        for block in script[1:]: # Convert subscripts in repeats, ifs, etc.
-                            scriptAddFill(block, down, up)
+                        # Convert subscripts in repeats, ifs, etc.
+                        if type(script[-1]) == tuple:
+                            if len(script) > 2:
+                                for block in script[1:-1]:
+                                    scriptAddFill(block, down, up)
+                        else:
+                            if len(script) > 1:
+                                for block in script[1:]:
+                                    scriptAddFill(block, down, up)
                         return script
                 else:
                     top = None
@@ -1834,9 +1837,9 @@ class ProjectConverter:
                             top = None
                         elif type(value) != list or len(value) < 1:
                             continue
-                        if value[0:len(down)+1] == down:
+                        if value[0:len(down)] == down:
                             top = i
-                        elif value[0:len(up)+1] == up and top != None and self.bigSize:
+                        elif value[0:len(up)] == up and top != None and self.bigSize:
                             script[top:i+1] = [
                                 ['penSize:', 200],
                                 ['gotoX:y:', -350, -100],
@@ -1850,12 +1853,17 @@ class ProjectConverter:
                                 ['penSize:', 255]
                             ]
                             top = None
-                        elif value[0] in ['call', 'doBroadcastAndWait', 'penColor:', 'changePenHueBy:', 'setPenHueTo:', 'changePenShadeBy:', 'setPenShadeTo:']:
+                        elif value[0] in ['call', 'broadcast:', 'doBroadcastAndWait', 'penColor:', 'changePenHueBy:', 'setPenHueTo:', 'changePenShadeBy:', 'setPenShadeTo:']:
                             top = None
             
             for script in scripts:    
                 self.bigSize = False
-                scriptAddFill(script, penDown, penUp)
+                if len(script) >= 3:
+                    scriptAddFill(script[2], penDown, penUp)
+        
+        self.blockID = 0
+        for script in scripts:
+            self.getCommentBlockIDs(script[2])
 
         # Add variables, lists, and custom blocks for compatibility mode
 
@@ -2863,7 +2871,7 @@ List of Options:
             retry = (retry[0] == 'Y' or retry[0] == 'y')
 
         if retry:
-            result = ProjectConverter().convertProject(sb3path, sb2path, gui=gui, replace=True, compatibility=True)
+            result = ProjectConverter().convertProject(sb3path, sb2path, gui=gui, replace=True, compatibility=True, unlimitedJoin=j, limitedLists=l, penFillScreen=p)
             warnings = result[0]
             sb2path = result[2]
 
