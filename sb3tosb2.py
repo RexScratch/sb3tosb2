@@ -2754,7 +2754,7 @@ Arguments: sb3tosb2.py [unordered options] sb3path sb2path
 List of Options:
 -h: Show this list
 -c: Enable Scratch 3.0 compatibility mode; Add workarounds for blocks that are exclusive to or work differently in 3.0
-  The indented options will automatically enabled compatibility mode:
+  The indented options will automatically enable compatibility mode:
   -j: Use an unlimited join workaround
   -l: Use custom blocks to automatically limit list length to 200,000''')
         exit()
