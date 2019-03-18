@@ -1808,7 +1808,7 @@ class ProjectConverter:
                 penUp = ['putPenUp']
 
             def scriptAddFill(script, down, up):
-                if type(script) != list:
+                if type(script) != list or len(script) < 1:
                     return
                 if type(script[0]) == str:
                     if script[0] in ['penSize:', 'changePenSizeBy:']:
@@ -1820,6 +1820,8 @@ class ProjectConverter:
                         except:
                             return
                     else:
+                        for block in script[1:]: # Convert subscripts in repeats, ifs, etc.
+                            scriptAddFill(block, down, up)
                         return script
                 else:
                     top = None
@@ -1837,11 +1839,11 @@ class ProjectConverter:
                         elif value[0:len(up)+1] == up and top != None and self.bigSize:
                             script[top:i+1] = [
                                 ['penSize:', 200],
-                                ['gotoX:y:', -250, -100],
+                                ['gotoX:y:', -350, -100],
                                 down,
                                 ['xpos:', 250],
                                 up,
-                                ['gotoX:y:', -250, 100],
+                                ['gotoX:y:', -350, 100],
                                 down,
                                 ['xpos:', 250],
                                 up,
