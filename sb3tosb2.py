@@ -204,6 +204,9 @@ class BlockArgMapper:
         output.append(self.converter.inputVal('BACKDROP', block, blocks))
         return output
 
+    def looks_nextbackdrop(self, block, blocks):
+        return ['nextScene']
+    
     def looks_changeeffectby(self, block, blocks):
         output = ['changeGraphicEffect:by:']
         field = self.converter.fieldVal('EFFECT', block)
@@ -295,9 +298,6 @@ class BlockArgMapper:
         output = ['startSceneAndWait']
         output.append(self.converter.inputVal('BACKDROP', block, blocks))
         return output
-
-    def looks_nextbackdrop(self, block, blocks):
-        return ['nextScene']
 
     # Sound
     
@@ -547,6 +547,9 @@ class BlockArgMapper:
         return output
 
     def event_whenthisspriteclicked(self, block, blocks):
+        return ['whenClicked']
+
+    def event_whenstageclicked(self, block, blocks):
         return ['whenClicked']
 
     def event_whenbackdropswitchesto(self, block, blocks):
