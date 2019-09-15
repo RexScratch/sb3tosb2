@@ -1477,7 +1477,11 @@ class ProjectConverter:
 
     def addCostume(self, c):
 
-        if not c['assetId'] in self.costumeAssets:
+        if c['assetId'] not in self.costumeAssets:
+
+            if 'md5ext' not in c:
+                c['md5ext'] = c['assetId'] + '.' + c['dataFormat']
+
             md5ext = c['md5ext']
             self.costumeAssets[c['assetId']] = [len(self.costumeAssets)]
 
