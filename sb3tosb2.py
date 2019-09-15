@@ -93,6 +93,22 @@ class BlockArgMapper:
         output.append(self.converter.inputVal('TO', block, blocks))
         return output
 
+    def motion_glideto(self, block, blocks):
+        assert self.converter.compat
+        output = ['glideSecs:toX:y:elapsed:from:']
+        output.append(self.converter.inputVal('SECS', block, blocks))
+        to = self.converter.inputVal('TO', block, blocks)
+        if to == '_random_':
+            output.append(['randomFrom:to:', '-240.0', '240.0'])
+            output.append(['randomFrom:to:', '-180.0', '180.0'])
+        elif to == '_mouse_':
+            output.append(['mouseX'])
+            output.append(['mouseY'])
+        else:
+            output.append(['getAttribute:of:', 'x position', to])
+            output.append(['getAttribute:of:', 'y position', to])
+        return output
+
     def motion_glidesecstoxy(self, block, blocks):
         output = ['glideSecs:toX:y:elapsed:from:']
         output.append(self.converter.inputVal('SECS', block, blocks))
@@ -1159,6 +1175,7 @@ class ProjectConverter:
     }
 
     compatWarnings = {
+        'motion_glideto',
         'sensing_setdragmode',
         'operator_contains',
         'data_itemnumoflist'
@@ -2823,7 +2840,7 @@ if __name__ == '__main__':
 
         print(
         '''
-Arguments: sb3tosb2.py [unordered options] sb3path sb2path
+Arguments: sb3tosb2.py [unordered options] sb3path [sb2path]
 List of Options:
 -h: Show this list
 -c: Enable Scratch 3.0 compatibility mode; Add workarounds for blocks that are exclusive to or work differently in 3.0
@@ -2834,7 +2851,7 @@ List of Options:
         exit()
 
     gui = False
-    if len(sys.argv) < 3:
+    if len(sys.argv) < 2:
         gui = True
         import tkinter
         from tkinter import filedialog, messagebox
@@ -2843,9 +2860,14 @@ List of Options:
         root.withdraw()
         sb3path = filedialog.askopenfilename(title="Open SB3 Project", filetypes=[("Scratch 3 Project", "*.sb3")])
         sb2path = filedialog.asksaveasfilename(title="Save as SB2 Project", filetypes=[("Scratch 2 Project", "*.sb2")])
+        
     else:
-        sb3path = sys.argv[-2]
-        sb2path = sys.argv[-1]
+        if len(sys.argv) < 3:
+            sb3path = sys.argv[-1]
+            sb2path = sb3path[0:-3] + 'sb2'
+        else:
+            sb3path = sys.argv[-2]
+            sb2path = sys.argv[-1]
 
     args = []
     if len(sys.argv) > 3:
