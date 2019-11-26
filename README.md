@@ -26,7 +26,7 @@ Usage (command line)
 
 Arguments
 --------------
-Options should be separated by a space.<br>
+Options may or may not be separated by a space.<br>
 List of options:
 - `-h`: Displays the program arguments and list of options
 - `-c`: This enables compatibility mode. Workarounds for the following blocks will be added to sprites:
