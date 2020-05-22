@@ -1478,7 +1478,10 @@ class ProjectConverter:
     def addCostume(self, c):
 
         if not c['assetId'] in self.costumeAssets:
-            md5ext = c['md5ext']
+            if 'md5ext' in c:
+                md5ext = c['md5ext']
+            else:
+                md5ext = c['assetId'] + '.' + c['dataFormat']
             self.costumeAssets[c['assetId']] = [len(self.costumeAssets)]
 
             f = self.zfsb3.open(c['md5ext'], 'r')
