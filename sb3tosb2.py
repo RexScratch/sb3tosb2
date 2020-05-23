@@ -1481,7 +1481,7 @@ class ProjectConverter:
             if 'md5ext' in c:
                 md5ext = c['md5ext']
             else:
-                md5ext = c['assetId'] + '.' + c['dataFormat']
+                md5ext = '{}.{}'.format(c['assetId'], c['dataFormat'])
             self.costumeAssets[c['assetId']] = [len(self.costumeAssets)]
 
             f = self.zfsb3.open(c['md5ext'], 'r')
