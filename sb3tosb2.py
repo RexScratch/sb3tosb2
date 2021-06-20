@@ -447,7 +447,7 @@ class BlockArgMapper:
                     paramStr = '[blocks...]'
                 else:
                     paramStr = param
-                self.converter.generateWarning("Incompatible block 'change pen [{} v] by ({})'".format(paramStr, value))
+                self.converter.generateWarning(f"Incompatible block 'change pen [{paramStr} v] by ({value})'")
                 return ['pen_changeColorParamBy', value, param]
 
     def pen_setPenColorParamTo(self, block, blocks):
@@ -487,7 +487,7 @@ class BlockArgMapper:
                     paramStr = '[blocks...]'
                 else:
                     paramStr = param
-                self.converter.generateWarning("Incompatible block 'set pen [{} v] to ({})'".format(paramStr, value))
+                self.converter.generateWarning(f"Incompatible block 'set pen [{paramStr} v] to ({value})'")
                 return ['pen_setPenColorParamTo', value, param]
 
     def pen_changePenSizeBy(self, block, blocks):
@@ -1120,7 +1120,7 @@ class ProjectConverter:
                 # Probably an invisible block
                 return None
             else:
-                self.generateWarning("Incompatible opcode '{}'".format(opcode))
+                self.generateWarning(f"Incompatible opcode '{opcode}'")
                 if opcode in ProjectConverter.compatWarnings:
                     self.compatWarning = True
 
@@ -1333,7 +1333,7 @@ class ProjectConverter:
                 else:
                     self.soundAssets[s['assetId']].append(False)
 
-                self.zfsb2.writestr('{}.{}'.format(len(self.soundAssets) - 1, s['dataFormat']), wav)
+                self.zfsb2.writestr(f'{len(self.soundAssets) - 1}.{s["dataFormat"]}', wav)
                 f.close()
             else:
                 self.soundAssets[s['assetId']].append(False)
@@ -1343,9 +1343,9 @@ class ProjectConverter:
             self.soundAssets[s['assetId']].append(md5)
 
         if s['dataFormat'] != 'wav':
-            self.generateWarning("Sound '{}' cannot be converted into WAV".format(s['name']))
+            self.generateWarning(f"Sound '{s['name']}' cannot be converted into WAV")
         elif self.soundAssets[s['assetId']][1] == True:
-            self.generateWarning("Sound '{}' cannot be converted to mono or downsampled".format(s['name']))
+            self.generateWarning(f"Sound '{s['name']}' cannot be converted to mono or downsampled")
 
         fileData = self.soundAssets[s['assetId']]
         sound = {
@@ -1365,7 +1365,7 @@ class ProjectConverter:
             if 'md5ext' in c:
                 md5ext = c['md5ext']
             else:
-                md5ext = '{}.{}'.format(c['assetId'], c['dataFormat'])
+                md5ext = f'{c["assetId"]}.{c["dataFormat"]}'
             self.costumeAssets[c['assetId']] = [len(self.costumeAssets)]
 
             f = self.zfsb3.open(c['md5ext'], 'r')
@@ -1412,12 +1412,12 @@ class ProjectConverter:
 
                                 transformLeft = image.find('transform="')
                                 transformRight = image.find('"', transformLeft + 11)
-                                image = image[0:transformRight] + 'translate({} {})'.format(trX, trY) + image[
+                                image = image[0:transformRight] + f'translate({trX} {trY})' + image[
                                                                                                         transformRight:]
 
                                 img = img[0:left] + image + img[right:]
                             except Exception as ex:
-                                # self.generateWarning("Costume '{}' may have incorrect bitmap image positioning".format(c['name']))
+                                # self.generateWarning(f"Costume '{c['name']}' may have incorrect bitmap image positioning")
                                 pass
 
                             left += 1
@@ -1490,7 +1490,7 @@ class ProjectConverter:
                                     attrs = attrs[0:matLeft] + matrix + attrs[matRight:]
                                 except Exception as ex:
                                     self.generateWarning(
-                                        "Costume '{}' may have incorrect text positioning".format(c['name']))
+                                        f"Costume '{c['name']}' may have incorrect text positioning")
                             else:
                                 trLeft = attrs.find('translate')
                                 scLeft = attrs.find('scale')
@@ -1529,11 +1529,11 @@ class ProjectConverter:
                                             trY -= 40 * scY
                                         else:
                                             trY -= 25 * scY
-                                        matrix = 'matrix({} 0 0 {} {} {})'.format(scX, scY, trX, trY)
+                                        matrix = f'matrix({scX} 0 0 {scY} {trX} {trY})'
                                         attrs = attrs[0:trLeft] + matrix + attrs[scRight:]
                                     except Exception as ex:
                                         self.generateWarning(
-                                            "Costume '{}' may have incorrect text positioning".format(c['name']))
+                                            f"Costume '{c['name']}' may have incorrect text positioning")
 
                             text = attrs + '>' + text
                             newImg += text
@@ -1546,7 +1546,7 @@ class ProjectConverter:
                 md5ext = hashlib.md5(img.encode('utf-8')).hexdigest() + '.svg'
             else:
                 img = bytes(img)
-            self.zfsb2.writestr('{}.{}'.format(len(self.costumeAssets) - 1, c['dataFormat']), img)
+            self.zfsb2.writestr(f'{len(self.costumeAssets) - 1}.{c["dataFormat"]}', img)
             f.close()
 
             self.costumeAssets[c['assetId']].append(md5ext)
@@ -2466,7 +2466,7 @@ class ProjectConverter:
             sprite['layerOrder'] = target['layerOrder']
 
         print("Converted {} ({}/{})".format(
-            rightPad('\'' + sprite['objName'] + '\'', maxLen - len(sprite['objName']), ' '), index + 1,
+            rightPad(f"'{sprite['objName']}'", maxLen - len(sprite['objName']), ' '), index + 1,
             self.totalTargets))
 
         return (isStage, sprite)
@@ -2567,7 +2567,7 @@ class ProjectConverter:
                 self.monitors.append(monitor)
 
             except Exception as ex:
-                self.generateWarning("Stage monitor '{}' will not be converted".format(m['opcode']))
+                self.generateWarning(f"Stage monitor '{m['opcode']}' will not be converted")
 
     def convertProject(self, sb3path, sb2path, gui=False, replace=False, compatibility=False, unlimitedJoin=False,
                        limitedLists=False, penFillScreen=False):
@@ -2581,11 +2581,11 @@ class ProjectConverter:
         self.warnings = 0
 
         if not sb3path[-3:] == 'sb3':
-            printError("File '{}' is not an sb3 file".format(sb3path), gui)
+            printError(f"File '{sb3path}' is not an sb3 file", gui)
 
         if not sb2path[-3:] == 'sb2':
             self.generateWarning(
-                "The converted project will be saved to '{}' instead of '{}'".format(sb2path + '.sb2', sb2path))
+                f"The converted project will be saved to '{sb2path + '.sb2'}' instead of '{sb2path}'")
             sb2path += '.sb2'
 
         self.convertingMonitors = False
@@ -2593,7 +2593,7 @@ class ProjectConverter:
         try:
             self.zfsb3 = zipfile.ZipFile(sb3path, 'r')
         except Exception as ex:
-            printError("File '{}' does not exist".format(sb3path), gui)
+            printError(f"File '{sb3path}' does not exist", gui)
 
         print('')
         try:
@@ -2610,8 +2610,8 @@ class ProjectConverter:
                                                      )
                     replaceFile = (goAhead == 'yes')
                 else:
-                    print("File '{}' already exists".format(sb2path))
-                    replaceFile = input("Overwrite '{}'? (Y/N): ".format(sb2path))
+                    print(f"File '{sb2path}' already exists")
+                    replaceFile = input(f"Overwrite '{sb2path}'? (Y/N): ")
                     print('')
                     replaceFile = replaceFile[0] == 'Y' or replaceFile[0] == 'y'
             if replaceFile:
@@ -2721,17 +2721,17 @@ def success(sb2path, warnings, gui):
         if warnings == 0:
             messagebox.showinfo("Success", "Completed with no warnings")
         elif warnings == 1:
-            messagebox.showinfo("Success", "Completed with {} warning".format(warnings))
+            messagebox.showinfo("Success", f"Completed with 1 warning")
         else:
-            messagebox.showinfo("Success", "Completed with {} warnings".format(warnings))
+            messagebox.showinfo("Success", f"Completed with {warnings} warnings")
     else:
         print('')
         if warnings == 0:
-            print("Saved to '{}' with no warnings".format(sb2path))
+            print(f"Saved to '{sb2path}' with no warnings")
         elif warnings == 1:
-            print("Saved to '{}' with {} warning".format(sb2path, warnings))
+            print(f"Saved to '{sb2path}' with 1 warning")
         else:
-            print("Saved to '{}' with {} warnings".format(sb2path, warnings))
+            print(f"Saved to '{sb2path}' with {warnings} warnings")
 
 
 if __name__ == '__main__':
@@ -2798,15 +2798,14 @@ if __name__ == '__main__':
     if result[1]:
         if gui:
             retry = messagebox.askquestion('Enable Compatibility Mode',
-                                           "The converted project may not work properly unless compatibility mode is enabled.\n\nWould you like to re-convert the sb3 file with compatibility mode enabled?".format(
-                                               sb3path),
+                                           "The converted project may not work properly unless compatibility mode is enabled.\n\nWould you like to re-convert the sb3 file with compatibility mode enabled?",
                                            icon='warning'
                                            )
             retry = (retry == 'yes')
         else:
             print('')
             printWarning("The converted project may not work properly unless compatibility mode is enabled.")
-            retry = input("Would you like to re-convert '{}' with compatibility mode enabled? (Y/N): ".format(sb3path))
+            retry = input(f"Would you like to re-convert '{sb3path}' with compatibility mode enabled? (Y/N): ")
             retry = (retry[0] == 'Y' or retry[0] == 'y')
 
         if retry:
