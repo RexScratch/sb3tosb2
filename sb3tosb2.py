@@ -1413,7 +1413,7 @@ class ProjectConverter:
                                 transformLeft = image.find('transform="')
                                 transformRight = image.find('"', transformLeft + 11)
                                 image = image[0:transformRight] + f'translate({trX} {trY})' + image[
-                                                                                                        transformRight:]
+                                                                                              transformRight:]
 
                                 img = img[0:left] + image + img[right:]
                             except Exception as ex:
@@ -2746,7 +2746,8 @@ if __name__ == '__main__':
       The indented options will automatically enable compatibility mode:
       -j: Use an unlimited join workaround
       -l: Use custom blocks to automatically limit list length to 200,000
-    -p: Tries to insert blocks to fill the screen when the pen size is set to a value greater than 255''')
+    -p: Tries to insert blocks to fill the screen when the pen size is set to a value greater than 255
+    ''')
         exit()
 
     gui = False
