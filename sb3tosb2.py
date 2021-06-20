@@ -2769,6 +2769,10 @@ if __name__ == '__main__':
             sb3path = sys.argv[-2]
             sb2path = sys.argv[-1]
 
+    if gui:
+        if sb3path == '' or sb2path == '':
+            exit()
+
     args = []
     if len(sys.argv) > 3:
         for arg in sys.argv[1:-2]:
