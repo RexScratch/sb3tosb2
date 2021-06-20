@@ -1648,12 +1648,15 @@ class ProjectConverter:
 
             if type(b) == list:
 
-                x = round(b[3] / 1.5, 6)
-                if x % 1 == 0:
-                    x = int(x)
-                y = round(b[4] / 1.8, 6)
-                if y % 1 == 0:
-                    y = int(y)
+                try:
+                    x = round(b[3] / 1.5, 6)
+                    if x % 1 == 0:
+                        x = int(x)
+                    y = round(b[4] / 1.8, 6)
+                    if y % 1 == 0:
+                        y = int(y)
+                except Exception as ex:
+                    x, y = 0, 0
                 script = [x, y]
 
                 if b[0] == 12:
@@ -1669,12 +1672,15 @@ class ProjectConverter:
 
             elif b['topLevel']:
 
-                x = round(b['x'] / 1.5, 6)
-                if x % 1 == 0:
-                    x = int(x)
-                y = round(b['y'] / 1.8, 6)
-                if y % 1 == 0:
-                    y = int(y)
+                try:
+                    x = round(b['x'] / 1.5, 6)
+                    if x % 1 == 0:
+                        x = int(x)
+                    y = round(b['y'] / 1.8, 6)
+                    if y % 1 == 0:
+                        y = int(y)
+                except Exception as ex:
+                    x, y = 0, 0
 
                 self.compatStackReporters = []
                 substack = self.convertSubstack(key, blocks)
