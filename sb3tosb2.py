@@ -67,74 +67,59 @@ class BlockArgMapper:
     # Motion
 
     def motion_movesteps(self, block, blocks):
-        output = ['forward:']
-        output.append(self.converter.inputVal('STEPS', block, blocks))
+        output = ['forward:', self.converter.inputVal('STEPS', block, blocks)]
         return output
 
     def motion_turnright(self, block, blocks):
-        output = ['turnRight:']
-        output.append(self.converter.inputVal('DEGREES', block, blocks))
+        output = ['turnRight:', self.converter.inputVal('DEGREES', block, blocks)]
         return output
 
     def motion_turnleft(self, block, blocks):
-        output = ['turnLeft:']
-        output.append(self.converter.inputVal('DEGREES', block, blocks))
+        output = ['turnLeft:', self.converter.inputVal('DEGREES', block, blocks)]
         return output
 
     def motion_pointindirection(self, block, blocks):
-        output = ['heading:']
-        output.append(self.converter.inputVal('DIRECTION', block, blocks))
+        output = ['heading:', self.converter.inputVal('DIRECTION', block, blocks)]
         return output
 
     def motion_pointtowards(self, block, blocks):
-        output = ['pointTowards:']
-        output.append(self.converter.inputVal('TOWARDS', block, blocks))
+        output = ['pointTowards:', self.converter.inputVal('TOWARDS', block, blocks)]
         return output
 
     def motion_gotoxy(self, block, blocks):
-        output = ['gotoX:y:']
-        output.append(self.converter.inputVal('X', block, blocks))
-        output.append(self.converter.inputVal('Y', block, blocks))
+        output = ['gotoX:y:', self.converter.inputVal('X', block, blocks), self.converter.inputVal('Y', block, blocks)]
         return output
 
     def motion_goto(self, block, blocks):
-        output = ['gotoSpriteOrMouse:']
-        output.append(self.converter.inputVal('TO', block, blocks))
+        output = ['gotoSpriteOrMouse:', self.converter.inputVal('TO', block, blocks)]
         return output
 
     def motion_glidesecstoxy(self, block, blocks):
-        output = ['glideSecs:toX:y:elapsed:from:']
-        output.append(self.converter.inputVal('SECS', block, blocks))
-        output.append(self.converter.inputVal('X', block, blocks))
-        output.append(self.converter.inputVal('Y', block, blocks))
+        output = ['glideSecs:toX:y:elapsed:from:', self.converter.inputVal('SECS', block, blocks),
+                  self.converter.inputVal('X', block, blocks), self.converter.inputVal('Y', block, blocks)]
         return output
 
     def motion_changexby(self, block, blocks):
-        output = ['changeXposBy:']
-        output.append(self.converter.inputVal('DX', block, blocks))
+        output = ['changeXposBy:', self.converter.inputVal('DX', block, blocks)]
         return output
 
     def motion_setx(self, block, blocks):
-        output = ['xpos:']
-        output.append(self.converter.inputVal('X', block, blocks))
+        output = ['xpos:', self.converter.inputVal('X', block, blocks)]
         return output
 
     def motion_changeyby(self, block, blocks):
-        output = ['changeYposBy:']
-        output.append(self.converter.inputVal('DY', block, blocks))
+        output = ['changeYposBy:', self.converter.inputVal('DY', block, blocks)]
         return output
 
     def motion_sety(self, block, blocks):
-        output = ['ypos:']
-        output.append(self.converter.inputVal('Y', block, blocks))
+        output = ['ypos:', self.converter.inputVal('Y', block, blocks)]
         return output
 
     def motion_ifonedgebounce(self, block, blocks):
         return ['bounceOffEdge']
 
     def motion_setrotationstyle(self, block, blocks):
-        output = ['setRotationStyle']
-        output.append(self.converter.fieldVal('STYLE', block))
+        output = ['setRotationStyle', self.converter.fieldVal('STYLE', block)]
         return output
 
     def motion_xposition(self, block, blocks):
@@ -147,18 +132,15 @@ class BlockArgMapper:
         return ['heading']
 
     def motion_scroll_right(self, block, blocks):
-        output = ['scrollRight']
-        output.append(self.converter.inputVal('DISTANCE', block, blocks))
+        output = ['scrollRight', self.converter.inputVal('DISTANCE', block, blocks)]
         return output
 
     def motion_scroll_up(self, block, blocks):
-        output = ['scrollUp']
-        output.append(self.converter.inputVal('DISTANCE', block, blocks))
+        output = ['scrollUp', self.converter.inputVal('DISTANCE', block, blocks)]
         return output
 
     def motion_align_scene(self, block, blocks):
-        output = ['scrollAlign']
-        output.append(self.converter.fieldVal('ALIGNMENT', block))
+        output = ['scrollAlign', self.converter.fieldVal('ALIGNMENT', block)]
         return output
 
     def motion_xscroll(self, block, blocks):
@@ -170,25 +152,21 @@ class BlockArgMapper:
     # Looks
 
     def looks_sayforsecs(self, block, blocks):
-        output = ['say:duration:elapsed:from:']
-        output.append(self.converter.inputVal('MESSAGE', block, blocks))
-        output.append(self.converter.inputVal('SECS', block, blocks))
+        output = ['say:duration:elapsed:from:', self.converter.inputVal('MESSAGE', block, blocks),
+                  self.converter.inputVal('SECS', block, blocks)]
         return output
 
     def looks_say(self, block, blocks):
-        output = ['say:']
-        output.append(self.converter.inputVal('MESSAGE', block, blocks))
+        output = ['say:', self.converter.inputVal('MESSAGE', block, blocks)]
         return output
 
     def looks_thinkforsecs(self, block, blocks):
-        output = ['think:duration:elapsed:from:']
-        output.append(self.converter.inputVal('MESSAGE', block, blocks))
-        output.append(self.converter.inputVal('SECS', block, blocks))
+        output = ['think:duration:elapsed:from:', self.converter.inputVal('MESSAGE', block, blocks),
+                  self.converter.inputVal('SECS', block, blocks)]
         return output
 
     def looks_think(self, block, blocks):
-        output = ['think:']
-        output.append(self.converter.inputVal('MESSAGE', block, blocks))
+        output = ['think:', self.converter.inputVal('MESSAGE', block, blocks)]
         return output
 
     def looks_show(self, block, blocks):
@@ -201,16 +179,14 @@ class BlockArgMapper:
         return ['hideAll']
 
     def looks_switchcostumeto(self, block, blocks):
-        output = ['lookLike:']
-        output.append(self.converter.inputVal('COSTUME', block, blocks))
+        output = ['lookLike:', self.converter.inputVal('COSTUME', block, blocks)]
         return output
 
     def looks_nextcostume(self, block, blocks):
         return ['nextCostume']
 
     def looks_switchbackdropto(self, block, blocks):
-        output = ['startScene']
-        output.append(self.converter.inputVal('BACKDROP', block, blocks))
+        output = ['startScene', self.converter.inputVal('BACKDROP', block, blocks)]
         return output
 
     def looks_nextbackdrop(self, block, blocks):
@@ -238,23 +214,19 @@ class BlockArgMapper:
         return ['filterReset']
 
     def looks_changesizeby(self, block, blocks):
-        output = ['changeSizeBy:']
-        output.append(self.converter.inputVal('CHANGE', block, blocks))
+        output = ['changeSizeBy:', self.converter.inputVal('CHANGE', block, blocks)]
         return output
 
     def looks_setsizeto(self, block, blocks):
-        output = ['setSizeTo:']
-        output.append(self.converter.inputVal('SIZE', block, blocks))
+        output = ['setSizeTo:', self.converter.inputVal('SIZE', block, blocks)]
         return output
 
     def looks_changestretchby(self, block, blocks):
-        output = ['changeStretchBy:']
-        output.append(self.converter.inputVal('CHANGE', block, blocks))
+        output = ['changeStretchBy:', self.converter.inputVal('CHANGE', block, blocks)]
         return output
 
     def looks_setstretchto(self, block, blocks):
-        output = ['setStretchTo:']
-        output.append(self.converter.inputVal('STRETCH', block, blocks))
+        output = ['setStretchTo:', self.converter.inputVal('STRETCH', block, blocks)]
         return output
 
     def looks_gotofrontback(self, block, blocks):
@@ -271,7 +243,7 @@ class BlockArgMapper:
             if type(layers) == str:
                 try:
                     layers = float(layers)
-                except:
+                except Exception as ex:
                     pass
             if type(layers) == float or type(layers) == int:
                 layers *= -1
@@ -304,33 +276,28 @@ class BlockArgMapper:
         return ['scale']
 
     def looks_switchbackdroptoandwait(self, block, blocks):
-        output = ['startSceneAndWait']
-        output.append(self.converter.inputVal('BACKDROP', block, blocks))
+        output = ['startSceneAndWait', self.converter.inputVal('BACKDROP', block, blocks)]
         return output
 
     # Sound
 
     def sound_play(self, block, blocks):
-        output = ['playSound:']
-        output.append(self.converter.inputVal('SOUND_MENU', block, blocks))
+        output = ['playSound:', self.converter.inputVal('SOUND_MENU', block, blocks)]
         return output
 
     def sound_playuntildone(self, block, blocks):
-        output = ['doPlaySoundAndWait']
-        output.append(self.converter.inputVal('SOUND_MENU', block, blocks))
+        output = ['doPlaySoundAndWait', self.converter.inputVal('SOUND_MENU', block, blocks)]
         return output
 
     def sound_stopallsounds(self, block, blocks):
         return ['stopAllSounds']
 
     def sound_changevolumeby(self, block, blocks):
-        output = ['changeVolumeBy:']
-        output.append(self.converter.inputVal('VOLUME', block, blocks))
+        output = ['changeVolumeBy:', self.converter.inputVal('VOLUME', block, blocks)]
         return output
 
     def sound_setvolumeto(self, block, blocks):
-        output = ['setVolumeTo:']
-        output.append(self.converter.inputVal('VOLUME', block, blocks))
+        output = ['setVolumeTo:', self.converter.inputVal('VOLUME', block, blocks)]
         return output
 
     def sound_volume(self, block, blocks):
@@ -339,46 +306,38 @@ class BlockArgMapper:
     # Music
 
     def music_playDrumForBeats(self, block, blocks):
-        output = ['playDrum']
-        output.append(self.converter.inputVal('DRUM', block, blocks))
-        output.append(self.converter.inputVal('BEATS', block, blocks))
+        output = ['playDrum', self.converter.inputVal('DRUM', block, blocks),
+                  self.converter.inputVal('BEATS', block, blocks)]
         return output
 
     def music_midiPlayDrumForBeats(self, block, blocks):
-        output = ['drum:duration:elapsed:from:']
-        output.append(self.converter.inputVal('DRUM', block, blocks))
-        output.append(self.converter.inputVal('BEATS', block, blocks))
+        output = ['drum:duration:elapsed:from:', self.converter.inputVal('DRUM', block, blocks),
+                  self.converter.inputVal('BEATS', block, blocks)]
         return output
 
     def music_restForBeats(self, block, blocks):
-        output = ['rest:elapsed:from:']
-        output.append(self.converter.inputVal('BEATS', block, blocks))
+        output = ['rest:elapsed:from:', self.converter.inputVal('BEATS', block, blocks)]
         return output
 
     def music_playNoteForBeats(self, block, blocks):
-        output = ['noteOn:duration:elapsed:from:']
-        output.append(self.converter.inputVal('NOTE', block, blocks))
-        output.append(self.converter.inputVal('BEATS', block, blocks))
+        output = ['noteOn:duration:elapsed:from:', self.converter.inputVal('NOTE', block, blocks),
+                  self.converter.inputVal('BEATS', block, blocks)]
         return output
 
     def music_setInstrument(self, block, blocks):
-        output = ['instrument:']
-        output.append(self.converter.inputVal('INSTRUMENT', block, blocks))
+        output = ['instrument:', self.converter.inputVal('INSTRUMENT', block, blocks)]
         return output
 
     def music_midiSetInstrument(self, block, blocks):
-        output = ['midiInstrument:']
-        output.append(self.converter.inputVal('INSTRUMENT', block, blocks))
+        output = ['midiInstrument:', self.converter.inputVal('INSTRUMENT', block, blocks)]
         return output
 
     def music_changeTempo(self, block, blocks):
-        output = ['changeTempoBy:']
-        output.append(self.converter.inputVal('TEMPO', block, blocks))
+        output = ['changeTempoBy:', self.converter.inputVal('TEMPO', block, blocks)]
         return output
 
     def music_setTempo(self, block, blocks):
-        output = ['setTempoTo:']
-        output.append(self.converter.inputVal('TEMPO', block, blocks))
+        output = ['setTempoTo:', self.converter.inputVal('TEMPO', block, blocks)]
         return output
 
     def music_getTempo(self, block, blocks):
@@ -463,27 +422,25 @@ class BlockArgMapper:
                 if type(value) == str:
                     try:
                         value = float(value)
-                    except:
+                    except Exception as ex:
                         pass
                 if type(value) == float or type(value) == int:
                     value *= 2
                 else:
                     value = ['*', 2, value]
-                output = ['changePenHueBy:']
-                output.append(value)
+                output = ['changePenHueBy:', value]
                 return output
             elif param == 'brightness':
                 if type(value) == str:
                     try:
                         value = float(value)
-                    except:
+                    except Exception as ex:
                         pass
                 if type(value) == float or type(value) == int:
                     value /= 2
                 else:
                     value = ['/', value, 2]
-                output = ['changePenShadeBy:']
-                output.append(value)
+                output = ['changePenShadeBy:', value]
                 return output
             else:
                 if type(param) == list:
@@ -505,27 +462,25 @@ class BlockArgMapper:
                 if type(value) == str:
                     try:
                         value = float(value)
-                    except:
+                    except Exception as ex:
                         pass
                 if type(value) == float or type(value) == int:
                     value *= 2
                 else:
                     value = ['*', 2, value]
-                output = ['setPenHueTo:']
-                output.append(value)
+                output = ['setPenHueTo:', value]
                 return output
             elif param == 'brightness':
                 if type(value) == str:
                     try:
                         value = float(value)
-                    except:
+                    except Exception as ex:
                         pass
                 if type(value) == float or type(value) == int:
                     value /= 2
                 else:
                     value = ['/', value, 2]
-                output = ['setPenShadeTo:']
-                output.append(value)
+                output = ['setPenShadeTo:', value]
                 return output
             else:
                 if type(param) == list:
@@ -536,13 +491,11 @@ class BlockArgMapper:
                 return ['pen_setPenColorParamTo', value, param]
 
     def pen_changePenSizeBy(self, block, blocks):
-        output = ['changePenSizeBy:']
-        output.append(self.converter.inputVal('SIZE', block, blocks))
+        output = ['changePenSizeBy:', self.converter.inputVal('SIZE', block, blocks)]
         return output
 
     def pen_setPenSizeTo(self, block, blocks):
-        output = ['penSize:']
-        output.append(self.converter.inputVal('SIZE', block, blocks))
+        output = ['penSize:', self.converter.inputVal('SIZE', block, blocks)]
         return output
 
     # Events
@@ -551,8 +504,7 @@ class BlockArgMapper:
         return ['whenGreenFlag']
 
     def event_whenkeypressed(self, block, blocks):
-        output = ['whenKeyPressed']
-        output.append(self.converter.fieldVal('KEY_OPTION', block))
+        output = ['whenKeyPressed', self.converter.fieldVal('KEY_OPTION', block)]
         return output
 
     def event_whenthisspriteclicked(self, block, blocks):
@@ -562,8 +514,7 @@ class BlockArgMapper:
         return ['whenClicked']
 
     def event_whenbackdropswitchesto(self, block, blocks):
-        output = ['whenSceneStarts']
-        output.append(self.converter.fieldVal('BACKDROP', block))
+        output = ['whenSceneStarts', self.converter.fieldVal('BACKDROP', block)]
         return output
 
     def event_whengreaterthan(self, block, blocks):
@@ -576,86 +527,72 @@ class BlockArgMapper:
         return output
 
     def event_whenbroadcastreceived(self, block, blocks):
-        output = ['whenIReceive']
-        output.append(self.converter.fieldVal('BROADCAST_OPTION', block))
+        output = ['whenIReceive', self.converter.fieldVal('BROADCAST_OPTION', block)]
         return output
 
     def event_broadcast(self, block, blocks):
-        output = ['broadcast:']
-        output.append(self.converter.inputVal('BROADCAST_INPUT', block, blocks))
+        output = ['broadcast:', self.converter.inputVal('BROADCAST_INPUT', block, blocks)]
         return output
 
     def event_broadcastandwait(self, block, blocks):
-        output = ['doBroadcastAndWait']
-        output.append(self.converter.inputVal('BROADCAST_INPUT', block, blocks))
+        output = ['doBroadcastAndWait', self.converter.inputVal('BROADCAST_INPUT', block, blocks)]
         return output
 
     # Control
 
     def control_wait(self, block, blocks):
-        output = ['wait:elapsed:from:']
-        output.append(self.converter.inputVal('DURATION', block, blocks))
+        output = ['wait:elapsed:from:', self.converter.inputVal('DURATION', block, blocks)]
         return output
 
     def control_repeat(self, block, blocks):
-        output = ['doRepeat']
-        output.append(self.converter.inputVal('TIMES', block, blocks))
-        output.append(self.converter.substackVal('SUBSTACK', block, blocks))
+        output = ['doRepeat', self.converter.inputVal('TIMES', block, blocks),
+                  self.converter.substackVal('SUBSTACK', block, blocks)]
         return output
 
     def control_forever(self, block, blocks):
-        output = ['doForever']
-        output.append(self.converter.substackVal('SUBSTACK', block, blocks))
+        output = ['doForever', self.converter.substackVal('SUBSTACK', block, blocks)]
         return output
 
     def control_if(self, block, blocks):
-        output = ['doIf']
-        output.append(self.converter.inputVal('CONDITION', block, blocks))
-        output.append(self.converter.substackVal('SUBSTACK', block, blocks))
+        output = ['doIf', self.converter.inputVal('CONDITION', block, blocks),
+                  self.converter.substackVal('SUBSTACK', block, blocks)]
         return output
 
     def control_if_else(self, block, blocks):
-        output = ['doIfElse']
-        output.append(self.converter.inputVal('CONDITION', block, blocks))
-        output.append(self.converter.substackVal('SUBSTACK', block, blocks))
-        output.append(self.converter.substackVal('SUBSTACK2', block, blocks))
+        output = ['doIfElse', self.converter.inputVal('CONDITION', block, blocks),
+                  self.converter.substackVal('SUBSTACK', block, blocks),
+                  self.converter.substackVal('SUBSTACK2', block, blocks)]
         return output
 
     def control_wait_until(self, block, blocks):
-        output = ['doWaitUntil']
-        output.append(self.converter.inputVal('CONDITION', block, blocks))
+        output = ['doWaitUntil', self.converter.inputVal('CONDITION', block, blocks)]
         return output
 
     def control_repeat_until(self, block, blocks):
-        output = ['doUntil']
-        output.append(self.converter.inputVal('CONDITION', block, blocks))
-        output.append(self.converter.substackVal('SUBSTACK', block, blocks))
+        output = ['doUntil', self.converter.inputVal('CONDITION', block, blocks),
+                  self.converter.substackVal('SUBSTACK', block, blocks)]
         return output
 
     def control_while(self, block, blocks):
-        output = ['doWhile']
-        output.append(self.converter.inputVal('CONDITION', block, blocks))
-        output.append(self.converter.substackVal('SUBSTACK', block, blocks))
+        output = ['doWhile', self.converter.inputVal('CONDITION', block, blocks),
+                  self.converter.substackVal('SUBSTACK', block, blocks)]
         return output
 
     def control_for_each(self, block, blocks):
-        output = ['doForLoop']
-        output.append(self.converter.fieldVal('VARIABLE', block))
-        output.append(self.converter.inputVal('VALUE', block, blocks))
-        output.append(self.converter.substackVal('SUBSTACK', block, blocks))
+        output = ['doForLoop', self.converter.fieldVal('VARIABLE', block),
+                  self.converter.inputVal('VALUE', block, blocks),
+                  self.converter.substackVal('SUBSTACK', block, blocks)]
         return output
 
     def control_stop(self, block, blocks):
-        output = ['stopScripts']
-        output.append(self.converter.fieldVal('STOP_OPTION', block))
+        output = ['stopScripts', self.converter.fieldVal('STOP_OPTION', block)]
         return output
 
     def control_start_as_clone(self, block, blocks):
         return ['whenCloned']
 
     def control_create_clone_of(self, block, blocks):
-        output = ['createCloneOf']
-        output.append(self.converter.inputVal('CLONE_OPTION', block, blocks))
+        output = ['createCloneOf', self.converter.inputVal('CLONE_OPTION', block, blocks)]
         return output
 
     def control_delete_this_clone(self, block, blocks):
@@ -671,67 +608,56 @@ class BlockArgMapper:
         return ['CLR_COUNT']
 
     def control_all_at_once(self, block, blocks):
-        output = ['warpSpeed']
-        output.append(self.converter.substackVal('SUBSTACK', block, blocks))
+        output = ['warpSpeed', self.converter.substackVal('SUBSTACK', block, blocks)]
         return output
 
     # Video Sensing
 
     def videoSensing_videoOn(self, block, blocks):
-        output = ['senseVideoMotion']
-        output.append(self.converter.inputVal('ATTRIBUTE', block, blocks))
-        output.append(self.converter.inputVal('SUBJECT', block, blocks))
+        output = ['senseVideoMotion', self.converter.inputVal('ATTRIBUTE', block, blocks),
+                  self.converter.inputVal('SUBJECT', block, blocks)]
         return output
 
     def videoSensing_whenMotionGreaterThan(self, block, blocks):
-        output = ['whenSensorGreaterThan', 'video motion']
-        output.append(self.converter.inputVal('REFERENCE', block, blocks))
+        output = ['whenSensorGreaterThan', 'video motion', self.converter.inputVal('REFERENCE', block, blocks)]
         return output
 
     def videoSensing_videoToggle(self, block, blocks):
-        output = ['setVideoState']
-        output.append(self.converter.inputVal('VIDEO_STATE', block, blocks))
+        output = ['setVideoState', self.converter.inputVal('VIDEO_STATE', block, blocks)]
         return output
 
     def videoSensing_setVideoTransparency(self, block, blocks):
-        output = ['setVideoTransparency']
-        output.append(self.converter.inputVal('TRANSPARENCY', block, blocks))
+        output = ['setVideoTransparency', self.converter.inputVal('TRANSPARENCY', block, blocks)]
         return output
 
     # Sensing
 
     def sensing_touchingobject(self, block, blocks):
-        output = ['touching:']
-        output.append(self.converter.inputVal('TOUCHINGOBJECTMENU', block, blocks))
+        output = ['touching:', self.converter.inputVal('TOUCHINGOBJECTMENU', block, blocks)]
         return output
 
     def sensing_touchingcolor(self, block, blocks):
-        output = ['touchingColor:']
-        output.append(self.converter.inputVal('COLOR', block, blocks))
+        output = ['touchingColor:', self.converter.inputVal('COLOR', block, blocks)]
         return output
 
     def sensing_coloristouchingcolor(self, block, blocks):
-        output = ['color:sees:']
-        output.append(self.converter.inputVal('COLOR', block, blocks))
-        output.append(self.converter.inputVal('COLOR2', block, blocks))
+        output = ['color:sees:', self.converter.inputVal('COLOR', block, blocks),
+                  self.converter.inputVal('COLOR2', block, blocks)]
         return output
 
     def sensing_distanceto(self, block, blocks):
-        output = ['distanceTo:']
-        output.append(self.converter.inputVal('DISTANCETOMENU', block, blocks))
+        output = ['distanceTo:', self.converter.inputVal('DISTANCETOMENU', block, blocks)]
         return output
 
     def sensing_askandwait(self, block, blocks):
-        output = ['doAsk']
-        output.append(self.converter.inputVal('QUESTION', block, blocks))
+        output = ['doAsk', self.converter.inputVal('QUESTION', block, blocks)]
         return output
 
     def sensing_answer(self, block, blocks):
         return ['answer']
 
     def sensing_keypressed(self, block, blocks):
-        output = ['keyPressed:']
-        output.append(self.converter.inputVal('KEY_OPTION', block, blocks))
+        output = ['keyPressed:', self.converter.inputVal('KEY_OPTION', block, blocks)]
         return output
 
     def sensing_mousedown(self, block, blocks):
@@ -801,155 +727,125 @@ class BlockArgMapper:
     # Operators
 
     def operator_add(self, block, blocks):
-        output = ['+']
-        output.append(self.converter.inputVal('NUM1', block, blocks))
-        output.append(self.converter.inputVal('NUM2', block, blocks))
+        output = ['+', self.converter.inputVal('NUM1', block, blocks), self.converter.inputVal('NUM2', block, blocks)]
         return output
 
     def operator_subtract(self, block, blocks):
-        output = ['-']
-        output.append(self.converter.inputVal('NUM1', block, blocks))
-        output.append(self.converter.inputVal('NUM2', block, blocks))
+        output = ['-', self.converter.inputVal('NUM1', block, blocks), self.converter.inputVal('NUM2', block, blocks)]
         return output
 
     def operator_multiply(self, block, blocks):
-        output = ['*']
-        output.append(self.converter.inputVal('NUM1', block, blocks))
-        output.append(self.converter.inputVal('NUM2', block, blocks))
+        output = ['*', self.converter.inputVal('NUM1', block, blocks), self.converter.inputVal('NUM2', block, blocks)]
         return output
 
     def operator_divide(self, block, blocks):
-        output = ['/']
-        output.append(self.converter.inputVal('NUM1', block, blocks))
-        output.append(self.converter.inputVal('NUM2', block, blocks))
+        output = ['/', self.converter.inputVal('NUM1', block, blocks), self.converter.inputVal('NUM2', block, blocks)]
         return output
 
     def operator_random(self, block, blocks):
-        output = ['randomFrom:to:']
-        output.append(self.converter.inputVal('FROM', block, blocks))
-        output.append(self.converter.inputVal('TO', block, blocks))
+        output = ['randomFrom:to:', self.converter.inputVal('FROM', block, blocks),
+                  self.converter.inputVal('TO', block, blocks)]
         return output
 
     def operator_gt(self, block, blocks):
-        output = ['>']
-        output.append(self.converter.inputVal('OPERAND1', block, blocks))
-        output.append(self.converter.inputVal('OPERAND2', block, blocks))
+        output = ['>', self.converter.inputVal('OPERAND1', block, blocks),
+                  self.converter.inputVal('OPERAND2', block, blocks)]
         return output
 
     def operator_lt(self, block, blocks):
-        output = ['<']
-        output.append(self.converter.inputVal('OPERAND1', block, blocks))
-        output.append(self.converter.inputVal('OPERAND2', block, blocks))
+        output = ['<', self.converter.inputVal('OPERAND1', block, blocks),
+                  self.converter.inputVal('OPERAND2', block, blocks)]
         return output
 
     def operator_equals(self, block, blocks):
-        output = ['=']
-        output.append(self.converter.inputVal('OPERAND1', block, blocks))
-        output.append(self.converter.inputVal('OPERAND2', block, blocks))
+        output = ['=', self.converter.inputVal('OPERAND1', block, blocks),
+                  self.converter.inputVal('OPERAND2', block, blocks)]
         return output
 
     def operator_and(self, block, blocks):
-        output = ['&']
-        output.append(self.converter.inputVal('OPERAND1', block, blocks))
-        output.append(self.converter.inputVal('OPERAND2', block, blocks))
+        output = ['&', self.converter.inputVal('OPERAND1', block, blocks),
+                  self.converter.inputVal('OPERAND2', block, blocks)]
         return output
 
     def operator_or(self, block, blocks):
-        output = ['|']
-        output.append(self.converter.inputVal('OPERAND1', block, blocks))
-        output.append(self.converter.inputVal('OPERAND2', block, blocks))
+        output = ['|', self.converter.inputVal('OPERAND1', block, blocks),
+                  self.converter.inputVal('OPERAND2', block, blocks)]
         return output
 
     def operator_not(self, block, blocks):
-        output = ['not']
-        output.append(self.converter.inputVal('OPERAND', block, blocks))
+        output = ['not', self.converter.inputVal('OPERAND', block, blocks)]
         return output
 
     def operator_join(self, block, blocks):
         if self.converter.unlimJoin:
             self.converter.joinStr = True
-            stackReporter = ['call', 'join %s %s']
-            stackReporter.append(self.converter.inputVal('STRING1', block, blocks))
-            stackReporter.append(self.converter.inputVal('STRING2', block, blocks))
+            stackReporter = ['call', 'join %s %s', self.converter.inputVal('STRING1', block, blocks),
+                             self.converter.inputVal('STRING2', block, blocks)]
             self.converter.compatStackReporters[-1].append(stackReporter)
             return ['getLine:ofList:', len(self.converter.compatStackReporters[-1]),
                     self.converter.compatVarName('results')]
         else:
-            output = ['concatenate:with:']
-            output.append(self.converter.inputVal('STRING1', block, blocks))
-            output.append(self.converter.inputVal('STRING2', block, blocks))
+            output = ['concatenate:with:', self.converter.inputVal('STRING1', block, blocks),
+                      self.converter.inputVal('STRING2', block, blocks)]
             return output
 
     def operator_letter_of(self, block, blocks):
-        output = ['letter:of:']
-        output.append(self.converter.inputVal('LETTER', block, blocks))
-        output.append(self.converter.inputVal('STRING', block, blocks))
+        output = ['letter:of:', self.converter.inputVal('LETTER', block, blocks),
+                  self.converter.inputVal('STRING', block, blocks)]
         return output
 
     def operator_length(self, block, blocks):
-        output = ['stringLength:']
-        output.append(self.converter.inputVal('STRING', block, blocks))
+        output = ['stringLength:', self.converter.inputVal('STRING', block, blocks)]
         return output
 
     def operator_contains(self, block, blocks):
         assert self.converter.compat
         self.converter.strContains = True
-        stackReporter = ['call', '%s contains %s ?']
-        stackReporter.append(self.converter.inputVal('STRING1', block, blocks))
-        stackReporter.append(self.converter.inputVal('STRING2', block, blocks))
+        stackReporter = ['call', '%s contains %s ?', self.converter.inputVal('STRING1', block, blocks),
+                         self.converter.inputVal('STRING2', block, blocks)]
         self.converter.compatStackReporters[-1].append(stackReporter)
         return ['getLine:ofList:', len(self.converter.compatStackReporters[-1]),
                 self.converter.compatVarName('results')]
 
     def operator_mod(self, block, blocks):
-        output = ['%']
-        output.append(self.converter.inputVal('NUM1', block, blocks))
-        output.append(self.converter.inputVal('NUM2', block, blocks))
+        output = ['%', self.converter.inputVal('NUM1', block, blocks), self.converter.inputVal('NUM2', block, blocks)]
         return output
 
     def operator_round(self, block, blocks):
-        output = ['rounded']
-        output.append(self.converter.inputVal('NUM', block, blocks))
+        output = ['rounded', self.converter.inputVal('NUM', block, blocks)]
         return output
 
     def operator_mathop(self, block, blocks):
-        output = ['computeFunction:of:']
-        output.append(self.converter.fieldVal('OPERATOR', block))
-        output.append(self.converter.inputVal('NUM', block, blocks))
+        output = ['computeFunction:of:', self.converter.fieldVal('OPERATOR', block),
+                  self.converter.inputVal('NUM', block, blocks)]
         return output
 
     # Data
 
     def data_variable(self, block, blocks):
-        output = ['readVariable']
-        output.append(self.converter.fieldVal('VARIABLE', block))
+        output = ['readVariable', self.converter.fieldVal('VARIABLE', block)]
         return output
 
     def data_setvariableto(self, block, blocks):
-        output = ['setVar:to:']
-        output.append(self.converter.fieldVal('VARIABLE', block))
-        output.append(self.converter.inputVal('VALUE', block, blocks))
+        output = ['setVar:to:', self.converter.fieldVal('VARIABLE', block),
+                  self.converter.inputVal('VALUE', block, blocks)]
         return output
 
     def data_changevariableby(self, block, blocks):
-        output = ['changeVar:by:']
-        output.append(self.converter.fieldVal('VARIABLE', block))
-        output.append(self.converter.inputVal('VALUE', block, blocks))
+        output = ['changeVar:by:', self.converter.fieldVal('VARIABLE', block),
+                  self.converter.inputVal('VALUE', block, blocks)]
         return output
 
     def data_showvariable(self, block, blocks):
-        output = ['showVariable:']
-        output.append(self.converter.fieldVal('VARIABLE', block))
+        output = ['showVariable:', self.converter.fieldVal('VARIABLE', block)]
         return output
 
     def data_hidevariable(self, block, blocks):
-        output = ['hideVariable:']
-        output.append(self.converter.fieldVal('VARIABLE', block))
+        output = ['hideVariable:', self.converter.fieldVal('VARIABLE', block)]
         return output
 
     def data_listcontents(self, block, blocks):
-        output = ['contentsOfList:']
-        output.append(self.converter.fieldVal('LIST', block))
+        output = ['contentsOfList:', self.converter.fieldVal('LIST', block)]
         return output
 
     def data_addtolist(self, block, blocks):
@@ -963,14 +859,12 @@ class BlockArgMapper:
         return output
 
     def data_deleteoflist(self, block, blocks):
-        output = ['deleteLine:ofList:']
-        output.append(self.converter.inputVal('INDEX', block, blocks))
-        output.append(self.converter.fieldVal('LIST', block))
+        output = ['deleteLine:ofList:', self.converter.inputVal('INDEX', block, blocks),
+                  self.converter.fieldVal('LIST', block)]
         return output
 
     def data_deletealloflist(self, block, blocks):
-        output = ['deleteLine:ofList:', 'all']
-        output.append(self.converter.fieldVal('LIST', block))
+        output = ['deleteLine:ofList:', 'all', self.converter.fieldVal('LIST', block)]
         return output
 
     def data_insertatlist(self, block, blocks):
@@ -985,47 +879,39 @@ class BlockArgMapper:
         return output
 
     def data_replaceitemoflist(self, block, blocks):
-        output = ['setLine:ofList:to:']
-        output.append(self.converter.inputVal('INDEX', block, blocks))
-        output.append(self.converter.fieldVal('LIST', block))
-        output.append(self.converter.inputVal('ITEM', block, blocks))
+        output = ['setLine:ofList:to:', self.converter.inputVal('INDEX', block, blocks),
+                  self.converter.fieldVal('LIST', block), self.converter.inputVal('ITEM', block, blocks)]
         return output
 
     def data_itemoflist(self, block, blocks):
-        output = ['getLine:ofList:']
-        output.append(self.converter.inputVal('INDEX', block, blocks))
-        output.append(self.converter.fieldVal('LIST', block))
+        output = ['getLine:ofList:', self.converter.inputVal('INDEX', block, blocks),
+                  self.converter.fieldVal('LIST', block)]
         return output
 
     def data_itemnumoflist(self, block, blocks):
         assert self.converter.compat
         self.converter.listSearch = True
-        stackReporter = ['call', 'item # of %s in %m.list']
-        stackReporter.append(self.converter.inputVal('ITEM', block, blocks))
-        stackReporter.append(self.converter.fieldVal('LIST', block))
+        stackReporter = ['call', 'item # of %s in %m.list', self.converter.inputVal('ITEM', block, blocks),
+                         self.converter.fieldVal('LIST', block)]
         self.converter.compatStackReporters[-1].append(stackReporter)
         return ['getLine:ofList:', len(self.converter.compatStackReporters[-1]),
                 self.converter.compatVarName('results')]
 
     def data_lengthoflist(self, block, blocks):
-        output = ['lineCountOfList:']
-        output.append(self.converter.fieldVal('LIST', block))
+        output = ['lineCountOfList:', self.converter.fieldVal('LIST', block)]
         return output
 
     def data_listcontainsitem(self, block, blocks):
-        output = ['list:contains:']
-        output.append(self.converter.fieldVal('LIST', block))
-        output.append(self.converter.inputVal('ITEM', block, blocks))
+        output = ['list:contains:', self.converter.fieldVal('LIST', block),
+                  self.converter.inputVal('ITEM', block, blocks)]
         return output
 
     def data_showlist(self, block, blocks):
-        output = ['showList:']
-        output.append(self.converter.fieldVal('LIST', block))
+        output = ['showList:', self.converter.fieldVal('LIST', block)]
         return output
 
     def data_hidelist(self, block, blocks):
-        output = ['hideList:']
-        output.append(self.converter.fieldVal('LIST', block))
+        output = ['hideList:', self.converter.fieldVal('LIST', block)]
         return output
 
     # Procedures
@@ -1033,10 +919,8 @@ class BlockArgMapper:
     def procedures_definition(self, block, blocks):
         block = blocks[block['inputs']['custom_block'][1]]
         procData = block['mutation']
-        output = ['procDef']
-        output.append(self.varName(procData['proccode']))
-        output.append(json.loads(procData['argumentnames']))
-        output.append(json.loads(procData['argumentdefaults']))
+        output = ['procDef', self.varName(procData['proccode']), json.loads(procData['argumentnames']),
+                  json.loads(procData['argumentdefaults'])]
         if len(output[-1]) != len(output[-2]):
             output[-1] = len(output[-2]) * ['']
         warp = procData['warp']
@@ -1044,88 +928,72 @@ class BlockArgMapper:
         return output
 
     def procedures_call(self, block, blocks):
-        output = ['call']
-        output.append(self.varName(block['mutation']['proccode']))
+        output = ['call', self.varName(block['mutation']['proccode'])]
         ids = json.loads(block['mutation']['argumentids'])
         for i in ids:
             output.append(self.converter.inputVal(i, block, blocks))
         return output
 
     def argument_reporter_string_number(self, block, blocks):
-        output = ['getParam']
-        output.append(self.converter.fieldVal('VALUE', block))
-        output.append('r')
+        output = ['getParam', self.converter.fieldVal('VALUE', block), 'r']
         return output
 
     def argument_reporter_boolean(self, block, blocks):
-        output = ['getParam']
-        output.append(self.converter.fieldVal('VALUE', block))
-        output.append('b')
+        output = ['getParam', self.converter.fieldVal('VALUE', block), 'b']
         return output
 
     # LEGO WeDo 2.0
 
     def wedo2_motorOnFor(self, block, blocks):
-        output = ['LEGO WeDo 2.0\u001fmotorOnFor']
-        output.append(self.converter.inputVal('MOTOR_ID', block, blocks))
-        output.append(self.converter.inputVal('DURATION', block, blocks))
+        output = ['LEGO WeDo 2.0\u001fmotorOnFor', self.converter.inputVal('MOTOR_ID', block, blocks),
+                  self.converter.inputVal('DURATION', block, blocks)]
         return output
 
     def wedo2_motorOn(self, block, blocks):
-        output = ['LEGO WeDo 2.0\u001fmotorOn']
-        output.append(self.converter.inputVal('MOTOR_ID', block, blocks))
+        output = ['LEGO WeDo 2.0\u001fmotorOn', self.converter.inputVal('MOTOR_ID', block, blocks)]
         return output
 
     def wedo2_motorOff(self, block, blocks):
-        output = ['LEGO WeDo 2.0\u001fmotorOff']
-        output.append(self.converter.inputVal('MOTOR_ID', block, blocks))
+        output = ['LEGO WeDo 2.0\u001fmotorOff', self.converter.inputVal('MOTOR_ID', block, blocks)]
         return output
 
     def wedo2_startMotorPower(self, block, blocks):
-        output = ['LEGO WeDo 2.0\u001fstartMotorPower']
-        output.append(self.converter.inputVal('MOTOR_ID', block, blocks))
-        output.append(self.converter.inputVal('POWER', block, blocks))
+        output = ['LEGO WeDo 2.0\u001fstartMotorPower', self.converter.inputVal('MOTOR_ID', block, blocks),
+                  self.converter.inputVal('POWER', block, blocks)]
         return output
 
     def wedo2_setMotorDirection(self, block, blocks):
-        output = ['LEGO WeDo 2.0\u001fsetMotorDirection']
-        output.append(self.converter.inputVal('MOTOR_ID', block, blocks))
-        output.append(self.converter.inputVal('MOTOR_DIRECTION', block, blocks))
+        output = ['LEGO WeDo 2.0\u001fsetMotorDirection', self.converter.inputVal('MOTOR_ID', block, blocks),
+                  self.converter.inputVal('MOTOR_DIRECTION', block, blocks)]
         return output
 
     def wedo2_setLightHue(self, block, blocks):
-        output = ['LEGO WeDo 2.0\u001fsetLED']
-        output.append(self.converter.inputVal('HUE', block, blocks))
+        output = ['LEGO WeDo 2.0\u001fsetLED', self.converter.inputVal('HUE', block, blocks)]
         return output
 
     def wedo2_playNoteFor(self, block, blocks):
-        output = ['LEGO WeDo 2.0\u001fplayNote']
-        output.append(self.converter.inputVal('NOTE', block, blocks))
-        output.append(self.converter.inputVal('DURATION', block, blocks))
+        output = ['LEGO WeDo 2.0\u001fplayNote', self.converter.inputVal('NOTE', block, blocks),
+                  self.converter.inputVal('DURATION', block, blocks)]
         return output
 
     def wedo2_whenDistance(self, block, blocks):
-        output = ['LEGO WeDo 2.0\u001fwhenDistance']
-        output.append(self.converter.inputVal('OP', block, blocks))
-        output.append(self.converter.inputVal('REFERENCE', block, blocks))
+        output = ['LEGO WeDo 2.0\u001fwhenDistance', self.converter.inputVal('OP', block, blocks),
+                  self.converter.inputVal('REFERENCE', block, blocks)]
         return output
 
     def wedo2_whenTilted(self, block, blocks):
-        output = ['LEGO WeDo 2.0\u001fwhenTilted']
-        output.append(self.converter.inputVal('TILT_DIRECTION_ANY', block, blocks))
+        output = ['LEGO WeDo 2.0\u001fwhenTilted', self.converter.inputVal('TILT_DIRECTION_ANY', block, blocks)]
         return output
 
     def wedo2_getDistance(self, block, blocks):
         return ['LEGO WeDo 2.0\u001fgetDistance']
 
     def wedo2_isTilted(self, block, blocks):
-        output = ['LEGO WeDo 2.0\u001fisTilted']
-        output.append(self.converter.inputVal('TILT_DIRECTION_ANY', block, blocks))
+        output = ['LEGO WeDo 2.0\u001fisTilted', self.converter.inputVal('TILT_DIRECTION_ANY', block, blocks)]
         return output
 
     def wedo2_getTiltAngle(self, block, blocks):
-        output = ['LEGO WeDo 2.0\u001fgetTilt']
-        output.append(self.converter.inputVal('TILT_DIRECTION', block, blocks))
+        output = ['LEGO WeDo 2.0\u001fgetTilt', self.converter.inputVal('TILT_DIRECTION', block, blocks)]
         return output
 
 
@@ -1180,7 +1048,7 @@ class ProjectConverter:
     def hexToDec(hexNum):
         try:
             return int(hexNum[1:], 16)
-        except:
+        except Exception as ex:
             return hexNum
 
     @staticmethod
@@ -1244,7 +1112,7 @@ class ProjectConverter:
             output = self.argmapper.mapArgs(opcode, block, blocks)
             output.append(tuple([block['UID']]))
             return output
-        except:
+        except Exception as ex:
             if len(block['inputs']) == 0 and len(block['fields']) == 1 and block['shadow'] and not block[
                 'topLevel']:  # Menu opcodes and shadows
                 return self.fieldVal(list(block['fields'].items())[0][0], block)
@@ -1272,7 +1140,7 @@ class ProjectConverter:
             return False
 
         value = block['inputs'][value]
-        if value[1] == None:
+        if value[1] is None:
             return None
         if value[0] == 1:
             if type(value[1]) == str:
@@ -1289,12 +1157,12 @@ class ProjectConverter:
                 else:
                     try:
                         return out[1]
-                    except:
+                    except Exception as ex:
                         return
             else:
                 try:
                     return self.convertBlock(blocks[out], blocks)
-                except:
+                except Exception as ex:
                     return False
 
         outType = value[1][0]
@@ -1349,7 +1217,7 @@ class ProjectConverter:
                     output[2].append(['deleteLine:ofList:', 'all', self.compatVarName('results')])
                     output[2].extend(self.compatStackReporters[-1])
             script.append(output)
-            if block['next'] == None:
+            if block['next'] is None:
                 end = True
             else:
                 block = blocks[block['next']]
@@ -1362,21 +1230,21 @@ class ProjectConverter:
             return None
 
         stack = block['inputs'][stack]
-        if len(stack) < 2 or stack[1] == None:
+        if len(stack) < 2 or stack[1] is None:
             return []
 
         return self.convertSubstack(stack[1], blocks)
 
     def addComment(self, c):
         comment = []
-        if c['x'] == None:
+        if c['x'] is None:
             x = None
         else:
             x = round(c['x'] / 1.5, 6)
             if x % 1 == 0:
                 x = int(x)
         comment.append(x)
-        if c['y'] == None:
+        if c['y'] is None:
             y = None
         else:
             y = round(c['y'] / 1.8, 6)
@@ -1389,7 +1257,7 @@ class ProjectConverter:
         comment.append(-1)
         comment.append(c['text'])
 
-        if c['blockId'] != None:
+        if c['blockId'] is not None:
             self.blockComments[c['blockId']] = len(self.comments)
 
         self.comments.append(comment)
@@ -1414,7 +1282,7 @@ class ProjectConverter:
                     channels = wavData.getnchannels()
                     srate = wavData.getframerate()
                     wavData.close()
-                except:
+                except Exception as ex:
                     # Original solution which works in most cases
                     sampData = wav[44:]
                     width = int.from_bytes(wav[34:36], byteorder='little') // 8
@@ -1434,7 +1302,7 @@ class ProjectConverter:
                             sampData = audioop.ratecv(sampData, width, 1, srate, 22050, None)[0]
                             srate = 22050
                             modified = True
-                    except:
+                    except Exception as ex:
                         error = True
 
                 if modified:
@@ -1451,7 +1319,7 @@ class ProjectConverter:
                         wavData.close()
                         wavFile.seek(0)
                         wav = wavFile.read()
-                    except:
+                    except Exception as ex:
                         # Original solution which works in most cases
                         wav = wav[0:22] + (1).to_bytes(2, byteorder='little') + srate.to_bytes(4,
                                                                                                byteorder='little') + wav[
@@ -1548,7 +1416,7 @@ class ProjectConverter:
                                                                                                         transformRight:]
 
                                 img = img[0:left] + image + img[right:]
-                            except:
+                            except Exception as ex:
                                 # self.generateWarning("Costume '{}' may have incorrect bitmap image positioning".format(c['name']))
                                 pass
 
@@ -1620,7 +1488,7 @@ class ProjectConverter:
                                     matrix[-1] = str(float(matrix[-1][0:-1]) + 2.5 * float(scY)) + ')'
                                     matrix = ' '.join(matrix)
                                     attrs = attrs[0:matLeft] + matrix + attrs[matRight:]
-                                except:
+                                except Exception as ex:
                                     self.generateWarning(
                                         "Costume '{}' may have incorrect text positioning".format(c['name']))
                             else:
@@ -1663,7 +1531,7 @@ class ProjectConverter:
                                             trY -= 25 * scY
                                         matrix = 'matrix({} 0 0 {} {} {})'.format(scX, scY, trX, trY)
                                         attrs = attrs[0:trLeft] + matrix + attrs[scRight:]
-                                    except:
+                                    except Exception as ex:
                                         self.generateWarning(
                                             "Costume '{}' may have incorrect text positioning".format(c['name']))
 
@@ -1795,7 +1663,7 @@ class ProjectConverter:
                 else:
                     script = None
 
-                if script != None:
+                if script is not None:
                     scripts.append(script)
                     self.scriptCount += 1
 
@@ -1835,7 +1703,7 @@ class ProjectConverter:
                                 return 'bigSize'
                             else:
                                 return 'smallSize'
-                        except:
+                        except Exception as ex:
                             return
                     else:
                         # Convert subscripts in repeats, ifs, etc.
@@ -1861,7 +1729,7 @@ class ProjectConverter:
                             continue
                         if value[0:len(down)] == down:
                             top = i
-                        elif value[0:len(up)] == up and top != None and self.bigSize:
+                        elif value[0:len(up)] == up and top is not None and self.bigSize:
                             script[top:i + 1] = [
                                 ['penSize:', 200],
                                 ['gotoX:y:', -350, -100],
@@ -2649,7 +2517,7 @@ class ProjectConverter:
                 'visible': m['visible']
             }
 
-            if m['spriteName'] == None:
+            if m['spriteName'] is None:
                 self.stageLists[monitor['listName']] = listData
             else:
                 if m['spriteName'] not in self.lists:
@@ -2672,12 +2540,12 @@ class ProjectConverter:
                 else:
                     param = None
 
-                assert cmd != None
+                assert cmd is not None
 
                 sMin = m['min'] if 'min' in m else m['sliderMin']
                 sMax = m['max'] if 'max' in m else m['sliderMax']
                 monitor = {
-                    'target': 'Stage' if m['spriteName'] == None else m['spriteName'],
+                    'target': 'Stage' if m['spriteName'] is None else m['spriteName'],
                     'cmd': cmd,
                     'param': param,
                     'color': ProjectConverter.monitorColors[m['opcode'].split('_')[0]],
@@ -2692,7 +2560,7 @@ class ProjectConverter:
                 }
                 self.monitors.append(monitor)
 
-            except:
+            except Exception as ex:
                 self.generateWarning("Stage monitor '{}' will not be converted".format(m['opcode']))
 
     def convertProject(self, sb3path, sb2path, gui=False, replace=False, compatibility=False, unlimitedJoin=False,
@@ -2718,13 +2586,13 @@ class ProjectConverter:
 
         try:
             self.zfsb3 = zipfile.ZipFile(sb3path, 'r')
-        except:
+        except Exception as ex:
             printError("File '{}' does not exist".format(sb3path), gui)
 
         print('')
         try:
             self.zfsb2 = zipfile.ZipFile(sb2path, 'x')
-        except:
+        except Exception as ex:
             replaceFile = False
             if replace:
                 replaceFile = True
