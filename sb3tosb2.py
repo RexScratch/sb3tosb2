@@ -57,10 +57,10 @@ class BlockArgMapper:
 
     def varName(self, name):
         if type(name) == str:
-            return ('_' if self.converter.compat else '') + name
+            return ('\xa0' if self.converter.compat else '') + name
         else:
             if self.converter.compat:
-                return ['concatenate:with:', '_', name]
+                return ['concatenate:with:', '\xa0', name]
             else:
                 return name
 
@@ -1072,10 +1072,10 @@ class ProjectConverter:
 
     def varName(self, name):
         if type(name) == str:
-            return ('_' if self.compat else '') + name
+            return ('\xa0' if self.compat else '') + name
         else:
             if self.compat:
-                return ['concatenate:with:', '_', name]
+                return ['concatenate:with:', '\xa0', name]
             else:
                 return name
 
