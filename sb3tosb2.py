@@ -1,9 +1,17 @@
-import sys, json, zipfile, audioop, hashlib, wave, io
+import audioop
+import hashlib
+import io
+import json
+import sys
+import wave
+import zipfile
 
 sys.setrecursionlimit(4100)
 
+
 def printWarning(message):
     print("WARNING: " + message)
+
 
 def printError(message, gui):
     if gui:
@@ -16,12 +24,13 @@ def printError(message, gui):
         input('Press enter to exit... ')
     exit()
 
+
 def rightPad(s, l, c):
     assert type(s) == str and type(c) == str
     return s + (l * c)
 
+
 class BlockArgMapper:
-    
     stageAttrs = {
         'backdrop #',
         'backdrop name',
@@ -159,7 +168,7 @@ class BlockArgMapper:
         return ['yScroll']
 
     # Looks
-    
+
     def looks_sayforsecs(self, block, blocks):
         output = ['say:duration:elapsed:from:']
         output.append(self.converter.inputVal('MESSAGE', block, blocks))
@@ -206,7 +215,7 @@ class BlockArgMapper:
 
     def looks_nextbackdrop(self, block, blocks):
         return ['nextScene']
-    
+
     def looks_changeeffectby(self, block, blocks):
         output = ['changeGraphicEffect:by:']
         field = self.converter.fieldVal('EFFECT', block)
@@ -276,7 +285,7 @@ class BlockArgMapper:
             return ['costumeIndex']
         elif field == 'name':
             if not self.converter.convertingMonitors:
-                if self.converter.compat: # Can't use getAttribute:of: because it doesn't work for clones
+                if self.converter.compat:  # Can't use getAttribute:of: because it doesn't work for clones
                     self.converter.costumeName = True
                     return ['getLine:ofList:', ['costumeIndex'], self.converter.compatVarName('costume names')]
                 else:
@@ -300,7 +309,7 @@ class BlockArgMapper:
         return output
 
     # Sound
-    
+
     def sound_play(self, block, blocks):
         output = ['playSound:']
         output.append(self.converter.inputVal('SOUND_MENU', block, blocks))
@@ -483,7 +492,7 @@ class BlockArgMapper:
                     paramStr = param
                 self.converter.generateWarning("Incompatible block 'change pen [{} v] by ({})'".format(paramStr, value))
                 return ['pen_changeColorParamBy', value, param]
-    
+
     def pen_setPenColorParamTo(self, block, blocks):
         param = self.converter.inputVal('COLOR_PARAM', block, blocks)
         value = self.converter.inputVal('VALUE', block, blocks)
@@ -525,7 +534,7 @@ class BlockArgMapper:
                     paramStr = param
                 self.converter.generateWarning("Incompatible block 'set pen [{} v] to ({})'".format(paramStr, value))
                 return ['pen_setPenColorParamTo', value, param]
-    
+
     def pen_changePenSizeBy(self, block, blocks):
         output = ['changePenSizeBy:']
         output.append(self.converter.inputVal('SIZE', block, blocks))
@@ -537,7 +546,7 @@ class BlockArgMapper:
         return output
 
     # Events
-    
+
     def event_whenflagclicked(self, block, blocks):
         return ['whenGreenFlag']
 
@@ -582,7 +591,7 @@ class BlockArgMapper:
         return output
 
     # Control
-    
+
     def control_wait(self, block, blocks):
         output = ['wait:elapsed:from:']
         output.append(self.converter.inputVal('DURATION', block, blocks))
@@ -863,7 +872,8 @@ class BlockArgMapper:
             stackReporter.append(self.converter.inputVal('STRING1', block, blocks))
             stackReporter.append(self.converter.inputVal('STRING2', block, blocks))
             self.converter.compatStackReporters[-1].append(stackReporter)
-            return ['getLine:ofList:', len(self.converter.compatStackReporters[-1]), self.converter.compatVarName('results')]
+            return ['getLine:ofList:', len(self.converter.compatStackReporters[-1]),
+                    self.converter.compatVarName('results')]
         else:
             output = ['concatenate:with:']
             output.append(self.converter.inputVal('STRING1', block, blocks))
@@ -888,7 +898,8 @@ class BlockArgMapper:
         stackReporter.append(self.converter.inputVal('STRING1', block, blocks))
         stackReporter.append(self.converter.inputVal('STRING2', block, blocks))
         self.converter.compatStackReporters[-1].append(stackReporter)
-        return ['getLine:ofList:', len(self.converter.compatStackReporters[-1]), self.converter.compatVarName('results')]
+        return ['getLine:ofList:', len(self.converter.compatStackReporters[-1]),
+                self.converter.compatVarName('results')]
 
     def operator_mod(self, block, blocks):
         output = ['%']
@@ -993,7 +1004,8 @@ class BlockArgMapper:
         stackReporter.append(self.converter.inputVal('ITEM', block, blocks))
         stackReporter.append(self.converter.fieldVal('LIST', block))
         self.converter.compatStackReporters[-1].append(stackReporter)
-        return ['getLine:ofList:', len(self.converter.compatStackReporters[-1]), self.converter.compatVarName('results')]
+        return ['getLine:ofList:', len(self.converter.compatStackReporters[-1]),
+                self.converter.compatVarName('results')]
 
     def data_lengthoflist(self, block, blocks):
         output = ['lineCountOfList:']
@@ -1116,8 +1128,8 @@ class BlockArgMapper:
         output.append(self.converter.inputVal('TILT_DIRECTION', block, blocks))
         return output
 
-class ProjectConverter:
 
+class ProjectConverter:
     varModes = {
         'default': 1,
         'large': 2,
@@ -1211,7 +1223,7 @@ class ProjectConverter:
             self.comments[self.blockComments[id]][5] = self.blockID
 
     def convertHackedReporter(self, reporter):
-        if self.compat: # Add underscore to variable names if in compatibility mode
+        if self.compat:  # Add underscore to variable names if in compatibility mode
             block = reporter[0]
             if block in ProjectConverter.sb2BlocksVarFields:
                 index = ProjectConverter.sb2BlocksVarFields[block]
@@ -1233,7 +1245,8 @@ class ProjectConverter:
             output.append(tuple([block['UID']]))
             return output
         except:
-            if len(block['inputs']) == 0 and len(block['fields']) == 1 and block['shadow'] and not block['topLevel']:  # Menu opcodes and shadows
+            if len(block['inputs']) == 0 and len(block['fields']) == 1 and block['shadow'] and not block[
+                'topLevel']:  # Menu opcodes and shadows
                 return self.fieldVal(list(block['fields'].items())[0][0], block)
             elif block['shadow'] and block['topLevel']:
                 # Probably an invisible block
@@ -1302,7 +1315,7 @@ class ProjectConverter:
                 pass
         elif outType == 9:
             output = ProjectConverter.hexToDec(output)
-        
+
         return ProjectConverter.specialNum(output)
 
     def fieldVal(self, value, block):
@@ -1351,7 +1364,7 @@ class ProjectConverter:
         stack = block['inputs'][stack]
         if len(stack) < 2 or stack[1] == None:
             return []
-        
+
         return self.convertSubstack(stack[1], blocks)
 
     def addComment(self, c):
@@ -1410,14 +1423,14 @@ class ProjectConverter:
 
                 modified = False
                 error = width * channels == 0 or (len(sampData) - 44) % (width * channels) != 0
-                
+
                 if not error:
                     try:
-                        if channels == 2: # Convert to mono
+                        if channels == 2:  # Convert to mono
                             sampData = audioop.tomono(sampData, width, 1, 1)
                             modified = True
-                        
-                        if srate > 22050 and srate != 44100 and not error: # Downsample
+
+                        if srate > 22050 and srate != 44100 and not error:  # Downsample
                             sampData = audioop.ratecv(sampData, width, 1, srate, 22050, None)[0]
                             srate = 22050
                             modified = True
@@ -1440,7 +1453,10 @@ class ProjectConverter:
                         wav = wavFile.read()
                     except:
                         # Original solution which works in most cases
-                        wav = wav[0:22] + (1).to_bytes(2, byteorder='little') + srate.to_bytes(4, byteorder='little') + wav[28:40] + size.to_bytes(4, byteorder='little') + sampData
+                        wav = wav[0:22] + (1).to_bytes(2, byteorder='little') + srate.to_bytes(4,
+                                                                                               byteorder='little') + wav[
+                                                                                                                     28:40] + size.to_bytes(
+                            4, byteorder='little') + sampData
                     self.soundAssets[s['assetId']].append(False)
                     md5 = hashlib.md5(wav).hexdigest()
                 elif error and not srate <= 22050 and not channels == 1:
@@ -1453,7 +1469,7 @@ class ProjectConverter:
                 f.close()
             else:
                 self.soundAssets[s['assetId']].append(False)
-            
+
             self.soundAssets[s['assetId']].append(scount)
             self.soundAssets[s['assetId']].append(srate)
             self.soundAssets[s['assetId']].append(md5)
@@ -1493,10 +1509,10 @@ class ProjectConverter:
                 # The correct values are found in the style attribute
 
                 img = img.replace('fill="undefined"', '')  # Remove undefined fill
-                
+
                 # Remove incorrect stroke-width
-                if ';stroke-width:' in img: # Check if stroke-width is in style attribute (may incorrectly remove some stroke-width attributes)
-                    left = 0 
+                if ';stroke-width:' in img:  # Check if stroke-width is in style attribute (may incorrectly remove some stroke-width attributes)
+                    left = 0
                     while left != -1:
                         left = img.find('stroke-width="', left)
                         if left != -1:
@@ -1518,17 +1534,18 @@ class ProjectConverter:
                             try:
                                 xLeft = image.find('x="')
                                 xRight = image.find('"', xLeft + 3)
-                                trX = float(image[xLeft+3:xRight])
-                                image = image[0:xLeft] + image[xRight+1:]
+                                trX = float(image[xLeft + 3:xRight])
+                                image = image[0:xLeft] + image[xRight + 1:]
 
                                 yLeft = image.find('y="')
                                 yRight = image.find('"', yLeft + 3)
-                                trY = float(image[yLeft+3:yRight])
-                                image = image[0:yLeft] + image[yRight+1:]
+                                trY = float(image[yLeft + 3:yRight])
+                                image = image[0:yLeft] + image[yRight + 1:]
 
                                 transformLeft = image.find('transform="')
                                 transformRight = image.find('"', transformLeft + 11)
-                                image = image[0:transformRight] + 'translate({} {})'.format(trX, trY) + image[transformRight:]
+                                image = image[0:transformRight] + 'translate({} {})'.format(trX, trY) + image[
+                                                                                                        transformRight:]
 
                                 img = img[0:left] + image + img[right:]
                             except:
@@ -1552,10 +1569,10 @@ class ProjectConverter:
 
                             innerLeft = img.find('>', left) + 1
                             attrs = img[left:innerLeft - 1] + ' '
-                            i = attrs.find('id="') # Remove id attribute
+                            i = attrs.find('id="')  # Remove id attribute
                             if i != -1:
                                 j = attrs.find('"', i + 4)
-                                attrs = attrs[0:i] + attrs[j+1:]
+                                attrs = attrs[0:i] + attrs[j + 1:]
                             attrs = attrs.replace('font-family="Sans Serif"', 'font-family="Helvetica"')
                             attrs = attrs.replace('font-family="Serif"', 'font-family="Donegal"')
                             attrs = attrs.replace('font-family="Handwriting"', 'font-family="Gloria"')
@@ -1578,7 +1595,7 @@ class ProjectConverter:
                                         innerRight = img.find('</tspan>', innerLeft, right)
                                         text += img[innerLeft:innerRight] + '\n'
                                         innerLeft = innerRight + 7
-                                
+
                                 text = text[0:-1]
                                 text = text + '</text>'
                             else:
@@ -1604,7 +1621,8 @@ class ProjectConverter:
                                     matrix = ' '.join(matrix)
                                     attrs = attrs[0:matLeft] + matrix + attrs[matRight:]
                                 except:
-                                    self.generateWarning("Costume '{}' may have incorrect text positioning".format(c['name']))
+                                    self.generateWarning(
+                                        "Costume '{}' may have incorrect text positioning".format(c['name']))
                             else:
                                 trLeft = attrs.find('translate')
                                 scLeft = attrs.find('scale')
@@ -1646,7 +1664,8 @@ class ProjectConverter:
                                         matrix = 'matrix({} 0 0 {} {} {})'.format(scX, scY, trX, trY)
                                         attrs = attrs[0:trLeft] + matrix + attrs[scRight:]
                                     except:
-                                        self.generateWarning("Costume '{}' may have incorrect text positioning".format(c['name']))
+                                        self.generateWarning(
+                                            "Costume '{}' may have incorrect text positioning".format(c['name']))
 
                             text = attrs + '>' + text
                             newImg += text
@@ -1655,7 +1674,7 @@ class ProjectConverter:
                             newImg += img[oldLeft:]
 
                     img = newImg
-                
+
                 md5ext = hashlib.md5(img.encode('utf-8')).hexdigest() + '.svg'
             else:
                 img = bytes(img)
@@ -1843,7 +1862,7 @@ class ProjectConverter:
                         if value[0:len(down)] == down:
                             top = i
                         elif value[0:len(up)] == up and top != None and self.bigSize:
-                            script[top:i+1] = [
+                            script[top:i + 1] = [
                                 ['penSize:', 200],
                                 ['gotoX:y:', -350, -100],
                                 down,
@@ -1856,14 +1875,15 @@ class ProjectConverter:
                                 ['penSize:', 255]
                             ]
                             top = None
-                        elif value[0] in ['call', 'broadcast:', 'doBroadcastAndWait', 'penColor:', 'changePenHueBy:', 'setPenHueTo:', 'changePenShadeBy:', 'setPenShadeTo:']:
+                        elif value[0] in ['call', 'broadcast:', 'doBroadcastAndWait', 'penColor:', 'changePenHueBy:',
+                                          'setPenHueTo:', 'changePenShadeBy:', 'setPenShadeTo:']:
                             top = None
-            
-            for script in scripts:    
+
+            for script in scripts:
                 self.bigSize = False
                 if len(script) >= 3:
                     scriptAddFill(script[2], penDown, penUp)
-        
+
         self.blockID = 0
         for script in scripts:
             self.getCommentBlockIDs(script[2])
@@ -1884,7 +1904,6 @@ class ProjectConverter:
                 })
 
             if self.penUpDown or self.dragMode:
-
                 pen = self.compatVarName('pen')
                 variables.append({
                     'name': pen,
@@ -1894,19 +1913,18 @@ class ProjectConverter:
 
                 scripts.append(
                     [0,
-                        0,
-                        [["procDef", "pen down", [], [], True], ["putPenDown"], ["setVar:to:", pen, "down"]]]
+                     0,
+                     [["procDef", "pen down", [], [], True], ["putPenDown"], ["setVar:to:", pen, "down"]]]
                 )
                 scripts.append(
                     [0,
-                        0,
-                        [["procDef", "pen up", [], [], True], ["putPenUp"], ["setVar:to:", pen, "up"]]]
+                     0,
+                     [["procDef", "pen up", [], [], True], ["putPenUp"], ["setVar:to:", pen, "up"]]]
                 )
 
                 self.scriptCount += 2
 
             if self.dragMode:
-
                 drag = self.compatVarName('drag')
                 variables.append({
                     'name': drag,
@@ -1916,35 +1934,35 @@ class ProjectConverter:
 
                 scripts.append(
                     [0,
-                        0,
-                        [["whenClicked"],
-                            ["doIf",
-                                ["=", ["readVariable", drag], "draggable"],
-                                [["call",
-                                        "drag %n %n",
-                                        ["-", ["xpos"], ["mouseX"]],
-                                        ["-", ["ypos"], ["mouseY"]]]]]]]
+                     0,
+                     [["whenClicked"],
+                      ["doIf",
+                       ["=", ["readVariable", drag], "draggable"],
+                       [["call",
+                         "drag %n %n",
+                         ["-", ["xpos"], ["mouseX"]],
+                         ["-", ["ypos"], ["mouseY"]]]]]]]
                 )
 
                 scripts.append(
                     [0,
-                        0,
-                        [["procDef", "set drag mode %s", ["drag"], ["draggable"], True],
-                            ["setVar:to:", drag, ["getParam", "drag", "r"]]]]
+                     0,
+                     [["procDef", "set drag mode %s", ["drag"], ["draggable"], True],
+                      ["setVar:to:", drag, ["getParam", "drag", "r"]]]]
                 )
 
                 scripts.append(
                     [0,
-                        0,
-                        [["procDef", "drag %n %n", ["X", "Y"], [0, 0], False],
-                            ['comeToFront'],
-                            ["doIf", ["=", ["readVariable", pen], "down"], [["putPenUp"]]],
-                            ["doUntil",
-                                ["not", ["mousePressed"]],
-                                [["gotoX:y:",
-                                        ["+", ["mouseX"], ["getParam", "X", "r"]],
-                                        ["+", ["mouseY"], ["getParam", "Y", "r"]]]]],
-                            ["doIf", ["=", ["readVariable", pen], "down"], [["putPenDown"]]]]]
+                     0,
+                     [["procDef", "drag %n %n", ["X", "Y"], [0, 0], False],
+                      ['comeToFront'],
+                      ["doIf", ["=", ["readVariable", pen], "down"], [["putPenUp"]]],
+                      ["doUntil",
+                       ["not", ["mousePressed"]],
+                       [["gotoX:y:",
+                         ["+", ["mouseX"], ["getParam", "X", "r"]],
+                         ["+", ["mouseY"], ["getParam", "Y", "r"]]]]],
+                      ["doIf", ["=", ["readVariable", pen], "down"], [["putPenDown"]]]]]
                 )
 
                 self.scriptCount += 3
@@ -1990,30 +2008,35 @@ class ProjectConverter:
                 })
                 scripts.append(
                     [0,
-                        0,
-                        [["procDef", "join %s %s", ["STRING1", "STRING2"], ["", ""], True],
-                            ["doIfElse",
-                                [">",
-                                    ["+", ["stringLength:", ["getParam", "STRING1", "r"]], ["stringLength:", ["getParam", "STRING2", "r"]]],
-                                    10240],
-                                [["doIf",
-                                        ["not", ["=", ["contentsOfList:", joinList], ["getParam", "STRING1", "r"]]],
-                                        [["deleteLine:ofList:", "all", joinList],
-                                            ["setVar:to:", "i", "0"],
-                                            ["doRepeat",
-                                                ["stringLength:", ["getParam", "STRING1", "r"]],
-                                                [["changeVar:by:", "i", 1],
-                                                    ["append:toList:", ["letter:of:", ["readVariable", "i"], ["getParam", "STRING1", "r"]], joinList]]]]],
-                                    ["setVar:to:", "i", "0"],
-                                    ["doRepeat",
-                                        ["stringLength:", ["getParam", "STRING2", "r"]],
-                                        [["changeVar:by:", "i", 1],
-                                            ["append:toList:", ["letter:of:", ["readVariable", "i"], ["getParam", "STRING2", "r"]], joinList]]],
-                                    ["append:toList:", ["contentsOfList:", joinList], "results"]],
-                                [["append:toList:", ["concatenate:with:", ["getParam", "STRING1", "r"], ["getParam", "STRING2", "r"]], "results"]]]]]
+                     0,
+                     [["procDef", "join %s %s", ["STRING1", "STRING2"], ["", ""], True],
+                      ["doIfElse",
+                       [">",
+                        ["+", ["stringLength:", ["getParam", "STRING1", "r"]],
+                         ["stringLength:", ["getParam", "STRING2", "r"]]],
+                        10240],
+                       [["doIf",
+                         ["not", ["=", ["contentsOfList:", joinList], ["getParam", "STRING1", "r"]]],
+                         [["deleteLine:ofList:", "all", joinList],
+                          ["setVar:to:", "i", "0"],
+                          ["doRepeat",
+                           ["stringLength:", ["getParam", "STRING1", "r"]],
+                           [["changeVar:by:", "i", 1],
+                            ["append:toList:", ["letter:of:", ["readVariable", "i"], ["getParam", "STRING1", "r"]],
+                             joinList]]]]],
+                        ["setVar:to:", "i", "0"],
+                        ["doRepeat",
+                         ["stringLength:", ["getParam", "STRING2", "r"]],
+                         [["changeVar:by:", "i", 1],
+                          ["append:toList:", ["letter:of:", ["readVariable", "i"], ["getParam", "STRING2", "r"]],
+                           joinList]]],
+                        ["append:toList:", ["contentsOfList:", joinList], "results"]],
+                       [["append:toList:",
+                         ["concatenate:with:", ["getParam", "STRING1", "r"], ["getParam", "STRING2", "r"]],
+                         "results"]]]]]
                 )
                 self.scriptCount += 1
-            
+
             if self.strContains:
                 j = self.compatVarName('j')
                 variables.append({
@@ -2029,84 +2052,91 @@ class ProjectConverter:
                 })
                 scripts.append(
                     [10,
-                        10,
-                        [["procDef", "%s contains %s ?", ["STRING1", "STRING2"], ["apple", "a"], True],
-                            ["doIfElse",
-                                ["=", ["stringLength:", ["getParam", "STRING2", "r"]], 0],
-                                [["append:toList:", ["=", 0, 0], results]],
-                                [["doIfElse",
-                                        ["=", ["stringLength:", ["getParam", "STRING2", "r"]], 1],
-                                        [["setVar:to:", i, 1],
-                                            ["doRepeat",
-                                                ["stringLength:", ["getParam", "STRING1", "r"]],
-                                                [["doIf",
-                                                        ["=",
-                                                            ["letter:of:", ["readVariable", i], ["getParam", "STRING1", "r"]],
-                                                            ["getParam", "STRING2", "r"]],
-                                                        [["append:toList:", ["=", 0, 0], results], ["stopScripts", "this script"]]],
-                                                    ["changeVar:by:", i, 1]]],
-                                            ["append:toList:", ["=", 1, 0], results]],
-                                        [["setVar:to:", k, ["-", ["stringLength:", ["getParam", "STRING2", "r"]], 1]],
-                                            ["setVar:to:", i, 1],
-                                            ["doRepeat",
-                                                ["+",
-                                                    ["-", ["stringLength:", ["getParam", "STRING1", "r"]], ["stringLength:", ["getParam", "STRING2", "r"]]],
-                                                    1],
-                                                [["setVar:to:", j, 0],
-                                                    ["doIf",
-                                                        ["=", ["readVariable", returnVar], "true"],
-                                                        [["append:toList:", ["=", 0, 0], results], ["stopScripts", "this script"]]],
-                                                    ["setVar:to:", returnVar, "true"],
-                                                    ["doUntil",
-                                                        [">", ["readVariable", j], ["readVariable", k]],
-                                                        [["doIfElse",
-                                                                ["=",
-                                                                    ["letter:of:", ["+", ["readVariable", i], ["readVariable", j]], ["getParam", "STRING1", "r"]],
-                                                                    ["letter:of:", ["+", ["readVariable", j], 1], ["getParam", "STRING2", "r"]]],
-                                                                [["changeVar:by:", j, 1]],
-                                                                [["setVar:to:", returnVar, "false"], ["setVar:to:", j, ["+", ["readVariable", k], 1]]]]]],
-                                                    ["changeVar:by:", i, 1]]],
-                                            ["append:toList:", ["=", 1, 0], results]]]]]]]
+                     10,
+                     [["procDef", "%s contains %s ?", ["STRING1", "STRING2"], ["apple", "a"], True],
+                      ["doIfElse",
+                       ["=", ["stringLength:", ["getParam", "STRING2", "r"]], 0],
+                       [["append:toList:", ["=", 0, 0], results]],
+                       [["doIfElse",
+                         ["=", ["stringLength:", ["getParam", "STRING2", "r"]], 1],
+                         [["setVar:to:", i, 1],
+                          ["doRepeat",
+                           ["stringLength:", ["getParam", "STRING1", "r"]],
+                           [["doIf",
+                             ["=",
+                              ["letter:of:", ["readVariable", i], ["getParam", "STRING1", "r"]],
+                              ["getParam", "STRING2", "r"]],
+                             [["append:toList:", ["=", 0, 0], results], ["stopScripts", "this script"]]],
+                            ["changeVar:by:", i, 1]]],
+                          ["append:toList:", ["=", 1, 0], results]],
+                         [["setVar:to:", k, ["-", ["stringLength:", ["getParam", "STRING2", "r"]], 1]],
+                          ["setVar:to:", i, 1],
+                          ["doRepeat",
+                           ["+",
+                            ["-", ["stringLength:", ["getParam", "STRING1", "r"]],
+                             ["stringLength:", ["getParam", "STRING2", "r"]]],
+                            1],
+                           [["setVar:to:", j, 0],
+                            ["doIf",
+                             ["=", ["readVariable", returnVar], "true"],
+                             [["append:toList:", ["=", 0, 0], results], ["stopScripts", "this script"]]],
+                            ["setVar:to:", returnVar, "true"],
+                            ["doUntil",
+                             [">", ["readVariable", j], ["readVariable", k]],
+                             [["doIfElse",
+                               ["=",
+                                ["letter:of:", ["+", ["readVariable", i], ["readVariable", j]],
+                                 ["getParam", "STRING1", "r"]],
+                                ["letter:of:", ["+", ["readVariable", j], 1], ["getParam", "STRING2", "r"]]],
+                               [["changeVar:by:", j, 1]],
+                               [["setVar:to:", returnVar, "false"],
+                                ["setVar:to:", j, ["+", ["readVariable", k], 1]]]]]],
+                            ["changeVar:by:", i, 1]]],
+                          ["append:toList:", ["=", 1, 0], results]]]]]]]
                 )
                 self.scriptCount += 1
 
             if self.listSearch:
                 scripts.append(
                     [0,
-                        0,
-                        [["procDef", "item # of %s in %m.list", ["ITEM", "LIST"], ["thing", ""], True],
-                            ["setVar:to:", returnVar, 0],
-                            ["doIf",
-                                ["list:contains:", ["getParam", "LIST", "r"], ["getParam", "ITEM", "r"]],
-                                [["setVar:to:", returnVar, 0],
-                                    ["doRepeat",
-                                        ["lineCountOfList:", ["getParam", "LIST", "r"]],
-                                        [["changeVar:by:", returnVar, 1],
-                                            ["doIf",
-                                                ["=",
-                                                    ["getLine:ofList:", ["readVariable", returnVar], ["getParam", "LIST", "r"]],
-                                                    ["getParam", "ITEM", "r"]],
-                                                [["append:toList:", ["readVariable", returnVar], results], ["stopScripts", "this script"]]]]]]],
-                                    ["append:toList:", 0, results]]]
+                     0,
+                     [["procDef", "item # of %s in %m.list", ["ITEM", "LIST"], ["thing", ""], True],
+                      ["setVar:to:", returnVar, 0],
+                      ["doIf",
+                       ["list:contains:", ["getParam", "LIST", "r"], ["getParam", "ITEM", "r"]],
+                       [["setVar:to:", returnVar, 0],
+                        ["doRepeat",
+                         ["lineCountOfList:", ["getParam", "LIST", "r"]],
+                         [["changeVar:by:", returnVar, 1],
+                          ["doIf",
+                           ["=",
+                            ["getLine:ofList:", ["readVariable", returnVar], ["getParam", "LIST", "r"]],
+                            ["getParam", "ITEM", "r"]],
+                           [["append:toList:", ["readVariable", returnVar], results],
+                            ["stopScripts", "this script"]]]]]]],
+                      ["append:toList:", 0, results]]]
                 )
                 self.scriptCount += 1
 
             if self.addList:
                 scripts.append(
                     [0,
-                        0,
-                        [["procDef", "add %s to %m.list", ["ITEM", "LIST"], ["thing", ""], True],
-                            ["doIf", ["<", ["lineCountOfList:", ["getParam", "LIST", "r"]], 200000], [["append:toList:", ["getParam", "ITEM", "r"], ["getParam", "LIST", "r"]]]]]]
+                     0,
+                     [["procDef", "add %s to %m.list", ["ITEM", "LIST"], ["thing", ""], True],
+                      ["doIf", ["<", ["lineCountOfList:", ["getParam", "LIST", "r"]], 200000],
+                       [["append:toList:", ["getParam", "ITEM", "r"], ["getParam", "LIST", "r"]]]]]]
                 )
                 self.scriptCount += 1
-            
+
             if self.insertList:
                 scripts.append(
                     [0,
-                        0,
-                        [["procDef", "insert %s at %n of %m.list", ["ITEM", "INDEX", "LIST"], ["thing", 1, ""], True],
-                            ["insert:at:ofList:", ["getParam", "ITEM", "r"], ["getParam", "INDEX", "r"], ["getParam", "LIST", "r"]],
-                            ["doIf", [">", ["lineCountOfList:", ["getParam", "LIST", "r"]], 200000], [["deleteLine:ofList:", "last", ["getParam", "LIST", "r"]]]]]]
+                     0,
+                     [["procDef", "insert %s at %n of %m.list", ["ITEM", "INDEX", "LIST"], ["thing", 1, ""], True],
+                      ["insert:at:ofList:", ["getParam", "ITEM", "r"], ["getParam", "INDEX", "r"],
+                       ["getParam", "LIST", "r"]],
+                      ["doIf", [">", ["lineCountOfList:", ["getParam", "LIST", "r"]], 200000],
+                       [["deleteLine:ofList:", "last", ["getParam", "LIST", "r"]]]]]]
                 )
                 self.scriptCount += 1
 
@@ -2114,7 +2144,7 @@ class ProjectConverter:
                 hue = self.compatVarName('hue')
                 variables.append({
                     'name': hue,
-                    'value': 200/3,
+                    'value': 200 / 3,
                     'isPersistent': False
                 })
                 sat = self.compatVarName('sat')
@@ -2144,7 +2174,7 @@ class ProjectConverter:
                 minVar = self.compatVarName('min')
                 variables.append({
                     'name': minVar,
-                    'value': 200/3,
+                    'value': 200 / 3,
                     'isPersistent': False
                 })
                 maxVar = self.compatVarName('max')
@@ -2192,336 +2222,338 @@ class ProjectConverter:
 
                 scripts.extend(
                     [[0,
-                        0,
-                        [["procDef", "set pen color to %c", ["COLOR"], [255], True],
-                            ["doIfElse",
-                                ["=", ["*", 1, ["getParam", "COLOR", "r"]], ["getParam", "COLOR", "r"]],
-                                [["penColor:", ["getParam", "COLOR", "r"]],
-                                    ["setVar:to:",
-                                        alpha,
-                                        ["%", ["computeFunction:of:", "floor", ["/", ["getParam", "COLOR", "r"], 16777216]], 256]],
-                                    ["doIf",
-                                        ["not", ["=", ["readVariable", alpha], 0]],
-                                        [["setVar:to:",
-                                                alpha,
-                                                ["*", 100, ["-", 1, ["/", ["readVariable", alpha], 255]]]]]],
-                                    ["call",
-                                        "store RGB as HSV %n %n %n",
-                                        ["/",
-                                            ["%", ["computeFunction:of:", "floor", ["/", ["getParam", "COLOR", "r"], 65536]], 256],
-                                            255],
-                                        ["/",
-                                            ["%", ["computeFunction:of:", "floor", ["/", ["getParam", "COLOR", "r"], 256]], 256],
-                                            255],
-                                        ["/", ["%", ["getParam", "COLOR", "r"], 256], 255]]],
+                      0,
+                      [["procDef", "set pen color to %c", ["COLOR"], [255], True],
+                       ["doIfElse",
+                        ["=", ["*", 1, ["getParam", "COLOR", "r"]], ["getParam", "COLOR", "r"]],
+                        [["penColor:", ["getParam", "COLOR", "r"]],
+                         ["setVar:to:",
+                          alpha,
+                          ["%", ["computeFunction:of:", "floor", ["/", ["getParam", "COLOR", "r"], 16777216]], 256]],
+                         ["doIf",
+                          ["not", ["=", ["readVariable", alpha], 0]],
+                          [["setVar:to:",
+                            alpha,
+                            ["*", 100, ["-", 1, ["/", ["readVariable", alpha], 255]]]]]],
+                         ["call",
+                          "store RGB as HSV %n %n %n",
+                          ["/",
+                           ["%", ["computeFunction:of:", "floor", ["/", ["getParam", "COLOR", "r"], 65536]], 256],
+                           255],
+                          ["/",
+                           ["%", ["computeFunction:of:", "floor", ["/", ["getParam", "COLOR", "r"], 256]], 256],
+                           255],
+                          ["/", ["%", ["getParam", "COLOR", "r"], 256], 255]]],
+                        [["doIfElse",
+                          ["=", ["letter:of:", 1, ["getParam", "COLOR", "r"]], "#"],
+                          [["doIfElse",
+                            ["=", ["stringLength:", ["getParam", "COLOR", "r"]], 7],
+                            [["call",
+                              "set pen color to %c",
+                              ["concatenate:with:",
+                               "0x",
+                               ["concatenate:with:",
+                                ["concatenate:with:",
+                                 ["letter:of:", 2, ["getParam", "COLOR", "r"]],
+                                 ["letter:of:", 3, ["getParam", "COLOR", "r"]]],
+                                ["concatenate:with:",
+                                 ["concatenate:with:",
+                                  ["letter:of:", 4, ["getParam", "COLOR", "r"]],
+                                  ["letter:of:", 5, ["getParam", "COLOR", "r"]]],
+                                 ["concatenate:with:",
+                                  ["letter:of:", 6, ["getParam", "COLOR", "r"]],
+                                  ["letter:of:", 7, ["getParam", "COLOR", "r"]]]]]]]],
+                            [["doIfElse",
+                              ["=", ["stringLength:", ["getParam", "COLOR", "r"]], 4],
+                              [["call",
+                                "set pen color to %c",
+                                ["concatenate:with:",
+                                 "0x",
+                                 ["concatenate:with:",
+                                  ["concatenate:with:",
+                                   ["letter:of:", 2, ["getParam", "COLOR", "r"]],
+                                   ["letter:of:", 2, ["getParam", "COLOR", "r"]]],
+                                  ["concatenate:with:",
+                                   ["concatenate:with:",
+                                    ["letter:of:", 3, ["getParam", "COLOR", "r"]],
+                                    ["letter:of:", 3, ["getParam", "COLOR", "r"]]],
+                                   ["concatenate:with:",
+                                    ["letter:of:", 4, ["getParam", "COLOR", "r"]],
+                                    ["letter:of:", 4, ["getParam", "COLOR", "r"]]]]]]]],
+                              [["call", "set pen color to %c", -16777216]]]]]],
+                          [["call", "set pen color to %c", -16777216]]]]]]],
+                     [0,
+                      0,
+                      [["procDef", "change pen %s by %n", ["COLOR_PARAM", "VALUE"], ["color", 10], True],
+                       ["doIfElse",
+                        ["=", ["getParam", "COLOR_PARAM", "r"], "color"],
+                        [["call",
+                          "set pen %s to %n",
+                          ["getParam", "COLOR_PARAM", "r"],
+                          ["+", ["readVariable", hue], ["getParam", "VALUE", "r"]]]],
+                        [["doIfElse",
+                          ["=", ["getParam", "COLOR_PARAM", "r"], "saturation"],
+                          [["call",
+                            "set pen %s to %n",
+                            ["getParam", "COLOR_PARAM", "r"],
+                            ["+", ["readVariable", sat], ["getParam", "VALUE", "r"]]]],
+                          [["doIfElse",
+                            ["=", ["getParam", "COLOR_PARAM", "r"], "brightness"],
+                            [["call",
+                              "set pen %s to %n",
+                              ["getParam", "COLOR_PARAM", "r"],
+                              ["+", ["readVariable", val], ["getParam", "VALUE", "r"]]]],
+                            [["doIf",
+                              ["=", ["getParam", "COLOR_PARAM", "r"], "transparency"],
+                              [["call",
+                                "set pen %s to %n",
+                                ["getParam", "COLOR_PARAM", "r"],
+                                ["+", ["readVariable", alpha], ["getParam", "VALUE", "r"]]]]]]]]]]]]],
+                     [0,
+                      0,
+                      [["procDef", "change pen color by %n", ["HUE"], [10], True],
+                       ["call", "change pen %s by %n", "color", ["/", ["getParam", "HUE", "r"], 2]]]],
+                     [0,
+                      0,
+                      [["procDef", "set pen color to %n", ["HUE"], [0], True],
+                       ["call", "set pen %s to %n", "color", ["/", ["getParam", "HUE", "r"], 2]]]],
+                     [0,
+                      0,
+                      [["procDef", "change pen shade by %n", ["SHADE"], [10], True],
+                       ["call", "set pen shade to %n", ["+", ["readVariable", shade], ["getParam", "SHADE", "r"]]]]],
+                     [0,
+                      0,
+                      [["procDef", "set pen shade to %n", ["SHADE"], [50], True],
+                       ["setVar:to:",
+                        shade,
+                        ["computeFunction:of:",
+                         "abs",
+                         ["-",
+                          ["getParam", "SHADE", "r"],
+                          ["*", 200, ["rounded", ["/", ["getParam", "SHADE", "r"], 200]]]]]],
+                       ["call", "HSV to RGB %n %n %n", ["readVariable", hue], 100, 100],
+                       ["doIfElse",
+                        ["<", ["readVariable", shade], 50],
+                        [["setVar:to:", x, ["/", ["+", ["readVariable", shade], 10], 60]],
+                         ["setVar:to:", r, ["rounded", ["*", ["readVariable", x], ["readVariable", r]]]],
+                         ["setVar:to:", g, ["rounded", ["*", ["readVariable", x], ["readVariable", g]]]],
+                         ["setVar:to:", b, ["rounded", ["*", ["readVariable", x], ["readVariable", b]]]]],
+                        [["setVar:to:", x, ["/", ["-", ["readVariable", shade], 50], 60]],
+                         ["setVar:to:",
+                          r,
+                          ["rounded",
+                           ["+",
+                            ["*", ["-", 1, ["readVariable", x]], ["readVariable", r]],
+                            ["*", ["readVariable", x], 255]]]],
+                         ["setVar:to:",
+                          g,
+                          ["rounded",
+                           ["+",
+                            ["*", ["-", 1, ["readVariable", x]], ["readVariable", g]],
+                            ["*", ["readVariable", x], 255]]]],
+                         ["setVar:to:",
+                          b,
+                          ["rounded",
+                           ["+",
+                            ["*", ["-", 1, ["readVariable", x]], ["readVariable", b]],
+                            ["*", ["readVariable", x], 255]]]]]],
+                       ["call",
+                        "store RGB as HSV %n %n %n",
+                        ["/", ["readVariable", r], 255],
+                        ["/", ["readVariable", g], 255],
+                        ["/", ["readVariable", b], 255]],
+                       ["penColor:",
+                        ["+",
+                         ["readVariable", b],
+                         ["*",
+                          256,
+                          ["+",
+                           ["readVariable", g],
+                           ["*",
+                            256,
+                            ["+",
+                             ["readVariable", r],
+                             ["*", 256, ["rounded", ["*", 2.55, ["-", 100, ["readVariable", alpha]]]]]]]]]]]]],
+                     [0,
+                      0,
+                      [["procDef", "set pen %s to %n", ["COLOR_PARAM", "VALUE"], ["color", 50], True],
+                       ["doIfElse",
+                        ["=", ["getParam", "COLOR_PARAM", "r"], "color"],
+                        [["setPenHueTo:", ["*", 2, ["getParam", "VALUE", "r"]]],
+                         ["setVar:to:", hue, ["%", ["getParam", "VALUE", "r"], 100]],
+                         ["stopScripts", "this script"]],
+                        [["doIfElse",
+                          ["=", ["getParam", "COLOR_PARAM", "r"], "saturation"],
+                          [["doIfElse",
+                            ["<", ["getParam", "VALUE", "r"], 0],
+                            [["setVar:to:", sat, 0]],
+                            [["doIfElse",
+                              [">", ["getParam", "VALUE", "r"], 100],
+                              [["setVar:to:", sat, 100]],
+                              [["setVar:to:", sat, ["getParam", "VALUE", "r"]]]]]]],
+                          [["doIfElse",
+                            ["=", ["getParam", "COLOR_PARAM", "r"], "brightness"],
+                            [["doIfElse",
+                              ["<", ["getParam", "VALUE", "r"], 0],
+                              [["setVar:to:", val, 0]],
+                              [["doIfElse",
+                                [">", ["getParam", "VALUE", "r"], 100],
+                                [["setVar:to:", val, 100]],
+                                [["setVar:to:", val, ["getParam", "VALUE", "r"]]]]]]],
+                            [["doIfElse",
+                              ["=", ["getParam", "COLOR_PARAM", "r"], "transparency"],
+                              [["doIfElse",
+                                ["<", ["getParam", "VALUE", "r"], 0],
+                                [["setVar:to:", alpha, 0]],
                                 [["doIfElse",
-                                        ["=", ["letter:of:", 1, ["getParam", "COLOR", "r"]], "#"],
-                                        [["doIfElse",
-                                                ["=", ["stringLength:", ["getParam", "COLOR", "r"]], 7],
-                                                [["call",
-                                                        "set pen color to %c",
-                                                        ["concatenate:with:",
-                                                            "0x",
-                                                            ["concatenate:with:",
-                                                                ["concatenate:with:",
-                                                                    ["letter:of:", 2, ["getParam", "COLOR", "r"]],
-                                                                    ["letter:of:", 3, ["getParam", "COLOR", "r"]]],
-                                                                ["concatenate:with:",
-                                                                    ["concatenate:with:",
-                                                                        ["letter:of:", 4, ["getParam", "COLOR", "r"]],
-                                                                        ["letter:of:", 5, ["getParam", "COLOR", "r"]]],
-                                                                    ["concatenate:with:",
-                                                                        ["letter:of:", 6, ["getParam", "COLOR", "r"]],
-                                                                        ["letter:of:", 7, ["getParam", "COLOR", "r"]]]]]]]],
-                                                [["doIfElse",
-                                                        ["=", ["stringLength:", ["getParam", "COLOR", "r"]], 4],
-                                                        [["call",
-                                                                "set pen color to %c",
-                                                                ["concatenate:with:",
-                                                                    "0x",
-                                                                    ["concatenate:with:",
-                                                                        ["concatenate:with:",
-                                                                            ["letter:of:", 2, ["getParam", "COLOR", "r"]],
-                                                                            ["letter:of:", 2, ["getParam", "COLOR", "r"]]],
-                                                                        ["concatenate:with:",
-                                                                            ["concatenate:with:",
-                                                                                ["letter:of:", 3, ["getParam", "COLOR", "r"]],
-                                                                                ["letter:of:", 3, ["getParam", "COLOR", "r"]]],
-                                                                            ["concatenate:with:",
-                                                                                ["letter:of:", 4, ["getParam", "COLOR", "r"]],
-                                                                                ["letter:of:", 4, ["getParam", "COLOR", "r"]]]]]]]],
-                                                        [["call", "set pen color to %c", -16777216]]]]]],
-                                        [["call", "set pen color to %c", -16777216]]]]]]],
-                    [0,
-                        0,
-                        [["procDef", "change pen %s by %n", ["COLOR_PARAM", "VALUE"], ["color", 10], True],
-                            ["doIfElse",
-                                ["=", ["getParam", "COLOR_PARAM", "r"], "color"],
-                                [["call",
-                                        "set pen %s to %n",
-                                        ["getParam", "COLOR_PARAM", "r"],
-                                        ["+", ["readVariable", hue], ["getParam", "VALUE", "r"]]]],
-                                [["doIfElse",
-                                        ["=", ["getParam", "COLOR_PARAM", "r"], "saturation"],
-                                        [["call",
-                                                "set pen %s to %n",
-                                                ["getParam", "COLOR_PARAM", "r"],
-                                                ["+", ["readVariable", sat], ["getParam", "VALUE", "r"]]]],
-                                        [["doIfElse",
-                                                ["=", ["getParam", "COLOR_PARAM", "r"], "brightness"],
-                                                [["call",
-                                                        "set pen %s to %n",
-                                                        ["getParam", "COLOR_PARAM", "r"],
-                                                        ["+", ["readVariable", val], ["getParam", "VALUE", "r"]]]],
-                                                [["doIf",
-                                                        ["=", ["getParam", "COLOR_PARAM", "r"], "transparency"],
-                                                        [["call",
-                                                                "set pen %s to %n",
-                                                                ["getParam", "COLOR_PARAM", "r"],
-                                                                ["+", ["readVariable", alpha], ["getParam", "VALUE", "r"]]]]]]]]]]]]],
-                    [0,
-                        0,
-                        [["procDef", "change pen color by %n", ["HUE"], [10], True],
-                            ["call", "change pen %s by %n", "color", ["/", ["getParam", "HUE", "r"], 2]]]],
-                    [0,
-                        0,
-                        [["procDef", "set pen color to %n", ["HUE"], [0], True],
-                            ["call", "set pen %s to %n", "color", ["/", ["getParam", "HUE", "r"], 2]]]],
-                    [0,
-                        0,
-                        [["procDef", "change pen shade by %n", ["SHADE"], [10], True],
-                            ["call", "set pen shade to %n", ["+", ["readVariable", shade], ["getParam", "SHADE", "r"]]]]],
-                    [0,
-                        0,
-                        [["procDef", "set pen shade to %n", ["SHADE"], [50], True],
-                            ["setVar:to:",
-                                shade,
-                                ["computeFunction:of:",
-                                    "abs",
-                                    ["-",
-                                        ["getParam", "SHADE", "r"],
-                                        ["*", 200, ["rounded", ["/", ["getParam", "SHADE", "r"], 200]]]]]],
-                            ["call", "HSV to RGB %n %n %n", ["readVariable", hue], 100, 100],
-                            ["doIfElse",
-                                ["<", ["readVariable", shade], 50],
-                                [["setVar:to:", x, ["/", ["+", ["readVariable", shade], 10], 60]],
-                                    ["setVar:to:", r, ["rounded", ["*", ["readVariable", x], ["readVariable", r]]]],
-                                    ["setVar:to:", g, ["rounded", ["*", ["readVariable", x], ["readVariable", g]]]],
-                                    ["setVar:to:", b, ["rounded", ["*", ["readVariable", x], ["readVariable", b]]]]],
-                                [["setVar:to:", x, ["/", ["-", ["readVariable", shade], 50], 60]],
-                                    ["setVar:to:",
-                                        r,
-                                        ["rounded",
-                                            ["+",
-                                                ["*", ["-", 1, ["readVariable", x]], ["readVariable", r]],
-                                                ["*", ["readVariable", x], 255]]]],
-                                    ["setVar:to:",
-                                        g,
-                                        ["rounded",
-                                            ["+",
-                                                ["*", ["-", 1, ["readVariable", x]], ["readVariable", g]],
-                                                ["*", ["readVariable", x], 255]]]],
-                                    ["setVar:to:",
-                                        b,
-                                        ["rounded",
-                                            ["+",
-                                                ["*", ["-", 1, ["readVariable", x]], ["readVariable", b]],
-                                                ["*", ["readVariable", x], 255]]]]]],
-                            ["call",
-                                "store RGB as HSV %n %n %n",
-                                ["/", ["readVariable", r], 255],
-                                ["/", ["readVariable", g], 255],
-                                ["/", ["readVariable", b], 255]],
-                            ["penColor:",
-                                ["+",
-                                    ["readVariable", b],
-                                    ["*",
-                                        256,
-                                        ["+",
-                                            ["readVariable", g],
-                                            ["*",
-                                                256,
-                                                ["+",
-                                                    ["readVariable", r],
-                                                    ["*", 256, ["rounded", ["*", 2.55, ["-", 100, ["readVariable", alpha]]]]]]]]]]]]],
-                    [0,
-                        0,
-                        [["procDef", "set pen %s to %n", ["COLOR_PARAM", "VALUE"], ["color", 50], True],
-                            ["doIfElse",
-                                ["=", ["getParam", "COLOR_PARAM", "r"], "color"],
-                                [["setPenHueTo:", ["*", 2, ["getParam", "VALUE", "r"]]],
-                                    ["setVar:to:", hue, ["%", ["getParam", "VALUE", "r"], 100]],
-                                    ["stopScripts", "this script"]],
-                                [["doIfElse",
-                                        ["=", ["getParam", "COLOR_PARAM", "r"], "saturation"],
-                                        [["doIfElse",
-                                                ["<", ["getParam", "VALUE", "r"], 0],
-                                                [["setVar:to:", sat, 0]],
-                                                [["doIfElse",
-                                                        [">", ["getParam", "VALUE", "r"], 100],
-                                                        [["setVar:to:", sat, 100]],
-                                                        [["setVar:to:", sat, ["getParam", "VALUE", "r"]]]]]]],
-                                        [["doIfElse",
-                                                ["=", ["getParam", "COLOR_PARAM", "r"], "brightness"],
-                                                [["doIfElse",
-                                                        ["<", ["getParam", "VALUE", "r"], 0],
-                                                        [["setVar:to:", val, 0]],
-                                                        [["doIfElse",
-                                                                [">", ["getParam", "VALUE", "r"], 100],
-                                                                [["setVar:to:", val, 100]],
-                                                                [["setVar:to:", val, ["getParam", "VALUE", "r"]]]]]]],
-                                                [["doIfElse",
-                                                        ["=", ["getParam", "COLOR_PARAM", "r"], "transparency"],
-                                                        [["doIfElse",
-                                                                ["<", ["getParam", "VALUE", "r"], 0],
-                                                                [["setVar:to:", alpha, 0]],
-                                                                [["doIfElse",
-                                                                        [">", ["getParam", "VALUE", "r"], 100],
-                                                                        [["setVar:to:", alpha, 100]],
-                                                                        [["setVar:to:", alpha, ["getParam", "VALUE", "r"]]]]]]],
-                                                        [["stopScripts", "this script"]]]]]]]]],
-                            ["call", "HSV to RGB %n %n %n", ["readVariable", hue], ["readVariable", sat], ["readVariable", val]],
-                            ["penColor:",
-                                ["+",
-                                    ["readVariable", b],
-                                    ["*",
-                                        256,
-                                        ["+",
-                                            ["readVariable", g],
-                                            ["*",
-                                                256,
-                                                ["+",
-                                                    ["readVariable", r],
-                                                    ["*", 256, ["rounded", ["*", 2.55, ["-", 100, ["readVariable", alpha]]]]]]]]]]]]],
-                    [0,
-                        0,
-                        [["procDef", "store RGB as HSV %n %n %n", ["R", "G", "B"], [0, 0, 0], True],
-                            ["doIfElse",
-                                ["not",
-                                    ["|",
-                                        [">", ["getParam", "R", "r"], ["getParam", "G", "r"]],
-                                        [">", ["getParam", "R", "r"], ["getParam", "B", "r"]]]],
-                                [["setVar:to:", minVar, ["getParam", "R", "r"]]],
-                                [["doIfElse",
-                                        ["not",
-                                            ["|",
-                                                [">", ["getParam", "G", "r"], ["getParam", "R", "r"]],
-                                                [">", ["getParam", "G", "r"], ["getParam", "B", "r"]]]],
-                                        [["setVar:to:", minVar, ["getParam", "G", "r"]]],
-                                        [["setVar:to:", minVar, ["getParam", "B", "r"]]]]]],
-                            ["doIfElse",
-                                ["not",
-                                    ["|",
-                                        ["<", ["getParam", "R", "r"], ["getParam", "G", "r"]],
-                                        ["<", ["getParam", "R", "r"], ["getParam", "B", "r"]]]],
-                                [["setVar:to:", maxVar, ["getParam", "R", "r"]]],
-                                [["doIfElse",
-                                        ["not",
-                                            ["|",
-                                                ["<", ["getParam", "G", "r"], ["getParam", "R", "r"]],
-                                                ["<", ["getParam", "G", "r"], ["getParam", "B", "r"]]]],
-                                        [["setVar:to:", maxVar, ["getParam", "G", "r"]]],
-                                        [["setVar:to:", maxVar, ["getParam", "B", "r"]]]]]],
-                            ["setVar:to:", diff, ["-", ["readVariable", maxVar], ["readVariable", minVar]]],
-                            ["doIfElse",
-                                ["=", ["readVariable", diff], 0],
-                                [["setVar:to:", hue, 0], ["setVar:to:", sat, 0]],
-                                [["doIfElse",
-                                        ["=", ["readVariable", maxVar], ["getParam", "R", "r"]],
-                                        [["setVar:to:",
-                                                hue,
-                                                ["/",
-                                                    ["%",
-                                                        ["/",
-                                                            ["-", ["getParam", "G", "r"], ["getParam", "B", "r"]],
-                                                            ["readVariable", diff]],
-                                                        6],
-                                                    0.06]]],
-                                        [["doIfElse",
-                                                ["=", ["readVariable", maxVar], ["getParam", "G", "r"]],
-                                                [["setVar:to:",
-                                                        hue,
-                                                        ["/",
-                                                            ["+",
-                                                                ["/",
-                                                                    ["-", ["getParam", "B", "r"], ["getParam", "R", "r"]],
-                                                                    ["readVariable", diff]],
-                                                                2],
-                                                            0.06]]],
-                                                [["setVar:to:",
-                                                        hue,
-                                                        ["/",
-                                                            ["+",
-                                                                ["/",
-                                                                    ["-", ["getParam", "R", "r"], ["getParam", "G", "r"]],
-                                                                    ["readVariable", diff]],
-                                                                4],
-                                                            0.06]]]]]],
-                                    ["setVar:to:", sat, ["*", 100, ["/", ["readVariable", diff], ["readVariable", maxVar]]]]]],
-                            ["setVar:to:", val, ["*", 100, ["readVariable", maxVar]]]]],
-                    [0,
-                        0,
-                        [["procDef", "HSV to RGB %n %n %n", ["H", "S", "V"], [0, 0, 0], True],
-                            ["setVar:to:",
-                                c,
-                                ["/", ["*", ["getParam", "V", "r"], ["getParam", "S", "r"]], 10000]],
-                            ["setVar:to:",
-                                x,
-                                ["*",
-                                    ["readVariable", c],
-                                    ["-",
-                                        1,
-                                        ["computeFunction:of:",
-                                            "abs",
-                                            ["-", ["%", ["*", 0.06, ["getParam", "H", "r"]], 2], 1]]]]],
-                            ["doIfElse",
-                                ["<", ["getParam", "H", "r"], ["/", 100, 6]],
-                                [["setVar:to:", r, ["readVariable", c]],
-                                    ["setVar:to:", g, ["readVariable", x]],
-                                    ["setVar:to:", b, 0]],
-                                [["doIfElse",
-                                        ["<", ["getParam", "H", "r"], ["/", 100, 3]],
-                                        [["setVar:to:", r, ["readVariable", x]],
-                                            ["setVar:to:", g, ["readVariable", c]],
-                                            ["setVar:to:", b, 0]],
-                                        [["doIfElse",
-                                                ["<", ["getParam", "H", "r"], 50],
-                                                [["setVar:to:", r, 0],
-                                                    ["setVar:to:", g, ["readVariable", c]],
-                                                    ["setVar:to:", b, ["readVariable", x]]],
-                                                [["doIfElse",
-                                                        ["<", ["getParam", "H", "r"], ["/", 200, 3]],
-                                                        [["setVar:to:", r, 0],
-                                                            ["setVar:to:", g, ["readVariable", x]],
-                                                            ["setVar:to:", b, ["readVariable", c]]],
-                                                        [["doIfElse",
-                                                                ["<", ["getParam", "H", "r"], ["/", 250, 3]],
-                                                                [["setVar:to:", r, ["readVariable", x]],
-                                                                    ["setVar:to:", g, 0],
-                                                                    ["setVar:to:", b, ["readVariable", c]]],
-                                                                [["setVar:to:", r, ["readVariable", x]],
-                                                                    ["setVar:to:", g, 0],
-                                                                    ["setVar:to:", b, ["readVariable", c]]]]]]]]]]]],
-                            ["setVar:to:",
-                                x,
-                                ["-", ["/", ["getParam", "V", "r"], 100], ["readVariable", c]]],
-                            ["setVar:to:",
-                                r,
-                                ["rounded", ["*", 255, ["+", ["readVariable", r], ["readVariable", x]]]]],
-                            ["setVar:to:",
-                                g,
-                                ["rounded", ["*", 255, ["+", ["readVariable", g], ["readVariable", x]]]]],
-                            ["setVar:to:",
-                                b,
-                                ["rounded", ["*", 255, ["+", ["readVariable", b], ["readVariable", x]]]]]]]]
+                                  [">", ["getParam", "VALUE", "r"], 100],
+                                  [["setVar:to:", alpha, 100]],
+                                  [["setVar:to:", alpha, ["getParam", "VALUE", "r"]]]]]]],
+                              [["stopScripts", "this script"]]]]]]]]],
+                       ["call", "HSV to RGB %n %n %n", ["readVariable", hue], ["readVariable", sat],
+                        ["readVariable", val]],
+                       ["penColor:",
+                        ["+",
+                         ["readVariable", b],
+                         ["*",
+                          256,
+                          ["+",
+                           ["readVariable", g],
+                           ["*",
+                            256,
+                            ["+",
+                             ["readVariable", r],
+                             ["*", 256, ["rounded", ["*", 2.55, ["-", 100, ["readVariable", alpha]]]]]]]]]]]]],
+                     [0,
+                      0,
+                      [["procDef", "store RGB as HSV %n %n %n", ["R", "G", "B"], [0, 0, 0], True],
+                       ["doIfElse",
+                        ["not",
+                         ["|",
+                          [">", ["getParam", "R", "r"], ["getParam", "G", "r"]],
+                          [">", ["getParam", "R", "r"], ["getParam", "B", "r"]]]],
+                        [["setVar:to:", minVar, ["getParam", "R", "r"]]],
+                        [["doIfElse",
+                          ["not",
+                           ["|",
+                            [">", ["getParam", "G", "r"], ["getParam", "R", "r"]],
+                            [">", ["getParam", "G", "r"], ["getParam", "B", "r"]]]],
+                          [["setVar:to:", minVar, ["getParam", "G", "r"]]],
+                          [["setVar:to:", minVar, ["getParam", "B", "r"]]]]]],
+                       ["doIfElse",
+                        ["not",
+                         ["|",
+                          ["<", ["getParam", "R", "r"], ["getParam", "G", "r"]],
+                          ["<", ["getParam", "R", "r"], ["getParam", "B", "r"]]]],
+                        [["setVar:to:", maxVar, ["getParam", "R", "r"]]],
+                        [["doIfElse",
+                          ["not",
+                           ["|",
+                            ["<", ["getParam", "G", "r"], ["getParam", "R", "r"]],
+                            ["<", ["getParam", "G", "r"], ["getParam", "B", "r"]]]],
+                          [["setVar:to:", maxVar, ["getParam", "G", "r"]]],
+                          [["setVar:to:", maxVar, ["getParam", "B", "r"]]]]]],
+                       ["setVar:to:", diff, ["-", ["readVariable", maxVar], ["readVariable", minVar]]],
+                       ["doIfElse",
+                        ["=", ["readVariable", diff], 0],
+                        [["setVar:to:", hue, 0], ["setVar:to:", sat, 0]],
+                        [["doIfElse",
+                          ["=", ["readVariable", maxVar], ["getParam", "R", "r"]],
+                          [["setVar:to:",
+                            hue,
+                            ["/",
+                             ["%",
+                              ["/",
+                               ["-", ["getParam", "G", "r"], ["getParam", "B", "r"]],
+                               ["readVariable", diff]],
+                              6],
+                             0.06]]],
+                          [["doIfElse",
+                            ["=", ["readVariable", maxVar], ["getParam", "G", "r"]],
+                            [["setVar:to:",
+                              hue,
+                              ["/",
+                               ["+",
+                                ["/",
+                                 ["-", ["getParam", "B", "r"], ["getParam", "R", "r"]],
+                                 ["readVariable", diff]],
+                                2],
+                               0.06]]],
+                            [["setVar:to:",
+                              hue,
+                              ["/",
+                               ["+",
+                                ["/",
+                                 ["-", ["getParam", "R", "r"], ["getParam", "G", "r"]],
+                                 ["readVariable", diff]],
+                                4],
+                               0.06]]]]]],
+                         ["setVar:to:", sat, ["*", 100, ["/", ["readVariable", diff], ["readVariable", maxVar]]]]]],
+                       ["setVar:to:", val, ["*", 100, ["readVariable", maxVar]]]]],
+                     [0,
+                      0,
+                      [["procDef", "HSV to RGB %n %n %n", ["H", "S", "V"], [0, 0, 0], True],
+                       ["setVar:to:",
+                        c,
+                        ["/", ["*", ["getParam", "V", "r"], ["getParam", "S", "r"]], 10000]],
+                       ["setVar:to:",
+                        x,
+                        ["*",
+                         ["readVariable", c],
+                         ["-",
+                          1,
+                          ["computeFunction:of:",
+                           "abs",
+                           ["-", ["%", ["*", 0.06, ["getParam", "H", "r"]], 2], 1]]]]],
+                       ["doIfElse",
+                        ["<", ["getParam", "H", "r"], ["/", 100, 6]],
+                        [["setVar:to:", r, ["readVariable", c]],
+                         ["setVar:to:", g, ["readVariable", x]],
+                         ["setVar:to:", b, 0]],
+                        [["doIfElse",
+                          ["<", ["getParam", "H", "r"], ["/", 100, 3]],
+                          [["setVar:to:", r, ["readVariable", x]],
+                           ["setVar:to:", g, ["readVariable", c]],
+                           ["setVar:to:", b, 0]],
+                          [["doIfElse",
+                            ["<", ["getParam", "H", "r"], 50],
+                            [["setVar:to:", r, 0],
+                             ["setVar:to:", g, ["readVariable", c]],
+                             ["setVar:to:", b, ["readVariable", x]]],
+                            [["doIfElse",
+                              ["<", ["getParam", "H", "r"], ["/", 200, 3]],
+                              [["setVar:to:", r, 0],
+                               ["setVar:to:", g, ["readVariable", x]],
+                               ["setVar:to:", b, ["readVariable", c]]],
+                              [["doIfElse",
+                                ["<", ["getParam", "H", "r"], ["/", 250, 3]],
+                                [["setVar:to:", r, ["readVariable", x]],
+                                 ["setVar:to:", g, 0],
+                                 ["setVar:to:", b, ["readVariable", c]]],
+                                [["setVar:to:", r, ["readVariable", x]],
+                                 ["setVar:to:", g, 0],
+                                 ["setVar:to:", b, ["readVariable", c]]]]]]]]]]]],
+                       ["setVar:to:",
+                        x,
+                        ["-", ["/", ["getParam", "V", "r"], 100], ["readVariable", c]]],
+                       ["setVar:to:",
+                        r,
+                        ["rounded", ["*", 255, ["+", ["readVariable", r], ["readVariable", x]]]]],
+                       ["setVar:to:",
+                        g,
+                        ["rounded", ["*", 255, ["+", ["readVariable", g], ["readVariable", x]]]]],
+                       ["setVar:to:",
+                        b,
+                        ["rounded", ["*", 255, ["+", ["readVariable", b], ["readVariable", x]]]]]]]]
                 )
                 self.scriptCount += 9
 
             if self.resetTimer:
                 scripts.append(
                     [0,
-                        0,
-                        [["procDef", "reset timer", [], [], True], ["setVar:to:", "reset time", ["timestamp"]], ["timerReset"]]]
+                     0,
+                     [["procDef", "reset timer", [], [], True], ["setVar:to:", "reset time", ["timestamp"]],
+                      ["timerReset"]]]
                 )
                 self.scriptCount += 1
 
@@ -2559,7 +2591,9 @@ class ProjectConverter:
             sprite['spriteInfo'] = {}
             sprite['layerOrder'] = target['layerOrder']
 
-        print("Converted {} ({}/{})".format(rightPad('\'' + sprite['objName'] + '\'', maxLen - len(sprite['objName']), ' '), index + 1, self.totalTargets))
+        print("Converted {} ({}/{})".format(
+            rightPad('\'' + sprite['objName'] + '\'', maxLen - len(sprite['objName']), ' '), index + 1,
+            self.totalTargets))
 
         return (isStage, sprite)
 
@@ -2661,9 +2695,10 @@ class ProjectConverter:
             except:
                 self.generateWarning("Stage monitor '{}' will not be converted".format(m['opcode']))
 
-    def convertProject(self, sb3path, sb2path, gui=False, replace=False, compatibility=False, unlimitedJoin=False, limitedLists=False, penFillScreen=False):
+    def convertProject(self, sb3path, sb2path, gui=False, replace=False, compatibility=False, unlimitedJoin=False,
+                       limitedLists=False, penFillScreen=False):
 
-        self.compatWarning = False        
+        self.compatWarning = False
         self.compat = compatibility
         self.unlimJoin = unlimitedJoin
         self.limList = limitedLists
@@ -2675,7 +2710,8 @@ class ProjectConverter:
             printError("File '{}' is not an sb3 file".format(sb3path), gui)
 
         if not sb2path[-3:] == 'sb2':
-            self.generateWarning("The converted project will be saved to '{}' instead of '{}'".format(sb2path + '.sb2', sb2path))
+            self.generateWarning(
+                "The converted project will be saved to '{}' instead of '{}'".format(sb2path + '.sb2', sb2path))
             sb2path += '.sb2'
 
         self.convertingMonitors = False
@@ -2745,13 +2781,13 @@ class ProjectConverter:
                 }
             )
             gfResetTimer = [0,
-                0,
-                [["whenGreenFlag"],
-                    ["doIf",
-                        [">",
-                            ["-", ["*", 86400, ["-", ["timestamp"], ["readVariable", "reset time"]]], ["timer"]],
-                            "0.1"],
-                        [["setVar:to:", "reset time", ["-", ["timestamp"], ["/", ["timer"], 86400]]]]]]]
+                            0,
+                            [["whenGreenFlag"],
+                             ["doIf",
+                              [">",
+                               ["-", ["*", 86400, ["-", ["timestamp"], ["readVariable", "reset time"]]], ["timer"]],
+                               "0.1"],
+                              [["setVar:to:", "reset time", ["-", ["timestamp"], ["/", ["timer"], 86400]]]]]]]
             output['scripts'].append(gfResetTimer)
             for sprite in sprites:
                 sprite['scripts'].append(gfResetTimer)
@@ -2775,7 +2811,7 @@ class ProjectConverter:
 
         # Sort sprites into their layers
 
-        sprites.sort(key = lambda sprite: sprite['layerOrder'])
+        sprites.sort(key=lambda sprite: sprite['layerOrder'])
         for sprite in sprites:
             del sprite['layerOrder']
 
@@ -2798,6 +2834,7 @@ class ProjectConverter:
 
         return (self.warnings, self.compatWarning and not self.compat, sb2path)
 
+
 def success(sb2path, warnings, gui):
     if gui:
         if warnings == 0:
@@ -2815,20 +2852,20 @@ def success(sb2path, warnings, gui):
         else:
             print("Saved to '{}' with {} warnings".format(sb2path, warnings))
 
+
 if __name__ == '__main__':
 
     if '-h' in sys.argv:
-
         print(
-        '''
-Arguments: sb3tosb2.py [unordered options] sb3path sb2path
-List of Options:
--h: Show this list
--c: Enable Scratch 3.0 compatibility mode; Add workarounds for blocks that are exclusive to or work differently in 3.0
-  The indented options will automatically enable compatibility mode:
-  -j: Use an unlimited join workaround
-  -l: Use custom blocks to automatically limit list length to 200,000
--p: Tries to insert blocks to fill the screen when the pen size is set to a value greater than 255''')
+            '''
+    Arguments: sb3tosb2.py [unordered options] sb3path sb2path
+    List of Options:
+    -h: Show this list
+    -c: Enable Scratch 3.0 compatibility mode; Add workarounds for blocks that are exclusive to or work differently in 3.0
+      The indented options will automatically enable compatibility mode:
+      -j: Use an unlimited join workaround
+      -l: Use custom blocks to automatically limit list length to 200,000
+    -p: Tries to insert blocks to fill the screen when the pen size is set to a value greater than 255''')
         exit()
 
     gui = False
@@ -2856,16 +2893,18 @@ List of Options:
     l = '-l' in args
     p = '-p' in args
 
-    result = ProjectConverter().convertProject(sb3path, sb2path, gui=gui, replace=gui, compatibility=(c or j or l), unlimitedJoin=j, limitedLists=l, penFillScreen=p)
+    result = ProjectConverter().convertProject(sb3path, sb2path, gui=gui, replace=gui, compatibility=(c or j or l),
+                                               unlimitedJoin=j, limitedLists=l, penFillScreen=p)
     warnings = result[0]
     sb2path = result[2]
 
     if result[1]:
         if gui:
             retry = messagebox.askquestion('Enable Compatibility Mode',
-                "The converted project may not work properly unless compatibility mode is enabled.\n\nWould you like to re-convert the sb3 file with compatibility mode enabled?".format(sb3path), 
-                icon='warning'
-            )
+                                           "The converted project may not work properly unless compatibility mode is enabled.\n\nWould you like to re-convert the sb3 file with compatibility mode enabled?".format(
+                                               sb3path),
+                                           icon='warning'
+                                           )
             retry = (retry == 'yes')
         else:
             print('')
@@ -2874,7 +2913,8 @@ List of Options:
             retry = (retry[0] == 'Y' or retry[0] == 'y')
 
         if retry:
-            result = ProjectConverter().convertProject(sb3path, sb2path, gui=gui, replace=True, compatibility=True, unlimitedJoin=j, limitedLists=l, penFillScreen=p)
+            result = ProjectConverter().convertProject(sb3path, sb2path, gui=gui, replace=True, compatibility=True,
+                                                       unlimitedJoin=j, limitedLists=l, penFillScreen=p)
             warnings = result[0]
             sb2path = result[2]
 
