@@ -2597,10 +2597,17 @@ class ProjectConverter:
             if replace:
                 replaceFile = True
             else:
-                print("File '{}' already exists".format(sb2path))
-                replaceFile = input("Overwrite '{}'? (Y/N): ".format(sb2path))
-                print('')
-                replaceFile = replaceFile[0] == 'Y' or replaceFile[0] == 'y'
+                if gui:
+                    goAhead = messagebox.askquestion('Overwrite SB2',
+                                                     f"File {sb2path} already exists.\n\nOverwrite {sb2path}?",
+                                                     icon='warning'
+                                                     )
+                    replaceFile = (goAhead == 'yes')
+                else:
+                    print("File '{}' already exists".format(sb2path))
+                    replaceFile = input("Overwrite '{}'? (Y/N): ".format(sb2path))
+                    print('')
+                    replaceFile = replaceFile[0] == 'Y' or replaceFile[0] == 'y'
             if replaceFile:
                 import os
                 os.remove(sb2path)
@@ -2700,7 +2707,7 @@ class ProjectConverter:
         self.zfsb3.close()
         self.zfsb2.close()
 
-        return (self.warnings, self.compatWarning and not self.compat, sb2path)
+        return self.warnings, self.compatWarning and not self.compat, sb2path
 
 
 def success(sb2path, warnings, gui):
@@ -2737,7 +2744,7 @@ if __name__ == '__main__':
         exit()
 
     gui = False
-    if len(sys.argv) < 3:
+    if len(sys.argv) < 2:
         gui = True
         import tkinter
         from tkinter import filedialog, messagebox
@@ -2745,10 +2752,22 @@ if __name__ == '__main__':
         root = tkinter.Tk()
         root.withdraw()
         sb3path = filedialog.askopenfilename(title="Open SB3 Project", filetypes=[("Scratch 3 Project", "*.sb3")])
-        sb2path = filedialog.asksaveasfilename(title="Save as SB2 Project", filetypes=[("Scratch 2 Project", "*.sb2")])
+        i = sb3path.rfind('.')
+        if i > -1:
+            sb2path = f'{sb3path[0:i]}.sb2'
+        else:
+            sb2path = f'{sb3path}.sb2'
     else:
-        sb3path = sys.argv[-2]
-        sb2path = sys.argv[-1]
+        if len(sys.argv) < 3:
+            sb3path = sys.argv[-1]
+            i = sb3path.rfind('.')
+            if i > -1:
+                sb2path = f'{sb3path[0:i]}.sb2'
+            else:
+                sb2path = f'{sb3path}.sb2'
+        else:
+            sb3path = sys.argv[-2]
+            sb2path = sys.argv[-1]
 
     args = []
     if len(sys.argv) > 3:
@@ -2761,7 +2780,7 @@ if __name__ == '__main__':
     l = '-l' in args
     p = '-p' in args
 
-    result = ProjectConverter().convertProject(sb3path, sb2path, gui=gui, replace=gui, compatibility=(c or j or l),
+    result = ProjectConverter().convertProject(sb3path, sb2path, gui=gui, replace=False, compatibility=(c or j or l),
                                                unlimitedJoin=j, limitedLists=l, penFillScreen=p)
     warnings = result[0]
     sb2path = result[2]

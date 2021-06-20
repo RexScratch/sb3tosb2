@@ -15,8 +15,7 @@ Usage
 --------------
 1. Run sb3tosb2.py with Python
 2. Select the SB3 file to open
-3. Either select the SB2 file to save to or type in a new file name
-4. Click OK to exit
+3. Click OK to exit. The SB2 file path will be the same as the SB3 file path except for the file extension.
 
 Usage (command line)
 --------------
