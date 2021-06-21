@@ -11,6 +11,15 @@ Installation
 --------------
 Download and extract the ZIP file and move the sb3tosb2.py file to wherever you want.
 
+or:
+
+```bash
+sudo make install
+```
+
+to install it to `/usr/local/bin/sb3tosb2`
+(also adds a shebang for it to run with python3).
+
 Usage
 --------------
 1. Run sb3tosb2.py with Python
