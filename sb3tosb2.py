@@ -1368,7 +1368,10 @@ class ProjectConverter:
                 md5ext = f'{c["assetId"]}.{c["dataFormat"]}'
             self.costumeAssets[c['assetId']] = [len(self.costumeAssets)]
 
-            f = self.zfsb3.open(c['md5ext'], 'r')
+            if "md5ext" in c.keys():
+                f = self.zfsb3.open(c['md5ext'], 'r')
+            else:
+                f = self.zfsb3.open(f'{c["assetId"]}.{c["dataFormat"]}', 'r')
             img = f.read()
             if c['dataFormat'] == 'svg':
                 img = str(img, encoding='utf-8')
